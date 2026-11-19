@@ -1,0 +1,10 @@
+{
+  "identities": [
+    {
+      "name": "nit",
+      "credentials": [{ "accessKey": "nit", "secretKey": "nit-s3-secret" }],
+      "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+    },
+    { "name": "anonymous", "actions": ["Read:nit-media"] }
+  ]
+}

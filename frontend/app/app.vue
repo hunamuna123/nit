@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/sonner'
 
 const colorMode = useColorMode()
 useHead({
-  meta: [{ name: 'theme-color', content: () => (colorMode.value === 'light' ? '#eef0f4' : '#0a0a0b') }],
+  meta: [{ name: 'theme-color', content: () => (colorMode.value === 'dark' ? '#0f0f11' : '#ffffff') }],
 })
 </script>
 
@@ -14,5 +14,5 @@ useHead({
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
-  <Toaster position="top-center" :theme="colorMode.value === 'light' ? 'light' : 'dark'" />
+  <Toaster position="top-center" :theme="colorMode.value === 'dark' ? 'dark' : 'light'" />
 </template>

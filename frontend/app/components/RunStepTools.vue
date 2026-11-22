@@ -100,20 +100,20 @@ defineExpose({ openStuck })
     <div class="flex items-center gap-1.5">
       <span class="text-[13px] text-[var(--text-3)] mr-1">Шаг полезен?</span>
       <button class="vote" :class="myVote === 1 && 'vote--on'" aria-label="Полезно" @click="castVote(1)">
-        <ThumbsUp class="size-4" /><span class="mono">{{ up || '' }}</span>
+        <ThumbsUp class="size-4" /><span class="tabular-nums">{{ up || '' }}</span>
       </button>
       <button class="vote" :class="myVote === -1 && 'vote--bad'" aria-label="Не полезно" @click="castVote(-1)">
-        <ThumbsDown class="size-4" /><span class="mono">{{ down || '' }}</span>
+        <ThumbsDown class="size-4" /><span class="tabular-nums">{{ down || '' }}</span>
       </button>
     </div>
     <div class="flex flex-wrap gap-2">
-      <button class="btn-glass btn-glass--sm stuck" @click="openStuck">
+      <button class="btn-secondary btn-sm" @click="openStuck">
         <LifeBuoy class="size-4" /> Застрял
       </button>
-      <button class="btn-glass btn-glass--sm" @click="openComments">
+      <button class="btn-secondary btn-sm" @click="openComments">
         <MessageSquare class="size-4" /> Обсуждение
       </button>
-      <button v-if="!embedded" class="btn-glass btn-glass--sm" @click="openSuggest">
+      <button v-if="!embedded" class="btn-secondary btn-sm" @click="openSuggest">
         <PencilLine class="size-4" /> Предложить правку
       </button>
     </div>
@@ -121,15 +121,15 @@ defineExpose({ openStuck })
     <Sheet v-model:open="stuckOpen">
       <SheetContent class="sm:max-w-md w-full overflow-y-auto">
         <SheetHeader>
-          <SheetTitle class="text-xl">
+          <SheetTitle class="text-lg">
             Застряли на шаге?
           </SheetTitle>
           <SheetDescription>«{{ step.title }}» — вот что помогло другим.</SheetDescription>
         </SheetHeader>
         <div class="px-4 pb-6 space-y-5">
-          <div class="glass p-4">
+          <div class="panel p-4">
             <div class="label mb-2">
-              <Sparkles class="size-3.5" /> подсказка ии
+              <Sparkles class="size-3.5" /> Подсказка GigaChat
             </div>
             <div v-if="helpLoading" class="space-y-2">
               <div class="skel h-4 w-11/12" /><div class="skel h-4 w-9/12" /><div class="skel h-4 w-10/12" />
@@ -141,21 +141,21 @@ defineExpose({ openStuck })
           </div>
           <form class="space-y-2" @submit.prevent="askHelp">
             <textarea v-model="question" class="field !min-h-[88px] !text-[14.5px]" placeholder="Опишите, что не получается: «в BIOS нет пункта SVM»" />
-            <button class="btn-chrome btn-chrome--sm w-full" :disabled="helpLoading">
-              <Sparkles class="size-4" /> Спросить ИИ с учётом вопроса
+            <button class="btn-primary btn-sm w-full" :disabled="helpLoading">
+              Спросить с учётом вопроса
             </button>
           </form>
           <div v-if="helpData?.tips.length">
             <div class="label mb-2">
-              советы учеников и экспертов
+              Советы других
             </div>
             <div class="space-y-2">
-              <div v-for="t in helpData.tips" :key="t.id" class="p-3 rounded-2xl bg-[var(--wash)]">
+              <div v-for="t in helpData.tips" :key="t.id" class="p-3 rounded-lg bg-[var(--wash)]">
                 <div class="flex items-center gap-2 text-[12px]">
                   <UserAvatar :id="t.user.id" :name="t.user.name" :size="22" />
                   <span class="font-semibold">{{ t.user.name }}</span>
                   <span v-if="t.user.role === 'expert'" class="tag tag--ok !h-5">эксперт</span>
-                  <span class="tag !h-5" :class="t.kind === 'tip' && 'tag--ice'">{{ KIND[t.kind] }}</span>
+                  <span class="tag !h-5" :class="t.kind === 'tip' && 'tag--info'">{{ KIND[t.kind] }}</span>
                 </div>
                 <p class="mt-1.5 text-[14px] text-[var(--text-2)] whitespace-pre-line">
                   {{ t.body }}
@@ -173,7 +173,7 @@ defineExpose({ openStuck })
     <Sheet v-model:open="commentsOpen">
       <SheetContent class="sm:max-w-md w-full overflow-y-auto">
         <SheetHeader>
-          <SheetTitle class="text-xl">
+          <SheetTitle class="text-lg">
             Обсуждение шага
           </SheetTitle>
           <SheetDescription>{{ step.title }}</SheetDescription>
@@ -182,13 +182,13 @@ defineExpose({ openStuck })
           <p v-if="!comments.length" class="text-sm text-[var(--text-3)]">
             Пока никто не писал. Будьте первым — ваш совет поможет следующим.
           </p>
-          <div v-for="c in comments" :key="c.id" class="p-3 rounded-2xl bg-[var(--wash)]">
+          <div v-for="c in comments" :key="c.id" class="p-3 rounded-lg bg-[var(--wash)]">
             <div class="flex flex-wrap items-center gap-2 text-[12px]">
               <UserAvatar :id="c.user.id" :name="c.user.name" :size="22" />
               <span class="font-semibold">{{ c.user.name }}</span>
               <span v-if="c.user.role === 'expert'" class="tag tag--ok !h-5">эксперт</span>
-              <span v-if="c.is_author" class="tag tag--lit !h-5">автор</span>
-              <span class="tag !h-5" :class="c.kind === 'tip' && 'tag--ice'">{{ KIND[c.kind] }}</span>
+              <span v-if="c.is_author" class="tag tag--strong !h-5">автор</span>
+              <span class="tag !h-5" :class="c.kind === 'tip' && 'tag--info'">{{ KIND[c.kind] }}</span>
               <span class="text-[var(--text-4)]">{{ timeAgo(c.created_at) }}</span>
             </div>
             <p class="mt-1.5 text-[14px] text-[var(--text-2)] whitespace-pre-line">
@@ -202,7 +202,7 @@ defineExpose({ openStuck })
               </button>
             </div>
             <textarea v-model="body" class="field !min-h-[90px] !text-[14.5px]" placeholder="Например: «у MSI пункт называется SVM Mode»" />
-            <button class="btn-chrome btn-chrome--sm w-full" :disabled="!body.trim()">
+            <button class="btn-primary btn-sm w-full" :disabled="!body.trim()">
               Отправить
             </button>
           </form>
@@ -221,13 +221,13 @@ defineExpose({ openStuck })
         </DialogHeader>
         <template v-if="auth.user">
           <input v-model="sTitle" class="field" placeholder="Заголовок шага">
-          <textarea v-model="sBody" class="field mono !text-[13.5px] !min-h-[260px]" />
+          <textarea v-model="sBody" class="field font-mono !text-[13.5px] !min-h-[260px]" />
           <input v-model="sMessage" class="field" placeholder="Почему так лучше? (коротко)">
           <div class="flex justify-end gap-2">
-            <button class="btn-glass btn-glass--sm" @click="suggestOpen = false">
+            <button class="btn-secondary btn-sm" @click="suggestOpen = false">
               Отмена
             </button>
-            <button class="btn-chrome btn-chrome--sm" :disabled="!sBody.trim() || sBody === step.body && sTitle === step.title" @click="sendSuggest">
+            <button class="btn-primary btn-sm" :disabled="!sBody.trim() || sBody === step.body && sTitle === step.title" @click="sendSuggest">
               Отправить автору
             </button>
           </div>
@@ -253,38 +253,30 @@ defineExpose({ openStuck })
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 36px;
-  min-width: 36px;
-  padding: 0 11px;
-  border-radius: 999px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
   font-size: 12.5px;
   color: var(--text-3);
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition: all .2s var(--ease);
+  border: 1px solid var(--line);
+  transition: color .15s, background .15s, border-color .15s;
 }
 
 .vote:hover {
   color: var(--foreground);
-}
-
-.vote:active {
-  transform: scale(.92);
+  border-color: var(--line-2);
 }
 
 .vote--on {
   color: var(--ok);
   background: var(--ok-wash);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 40%, transparent);
+  border-color: transparent;
 }
 
 .vote--bad {
   color: var(--crit);
   background: var(--crit-wash);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--crit) 40%, transparent);
-}
-
-.stuck:hover {
-  color: var(--warn);
+  border-color: transparent;
 }
 </style>

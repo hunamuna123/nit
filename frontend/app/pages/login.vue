@@ -47,34 +47,33 @@ async function demoLogin(addr: string) {
 
 <template>
   <div class="auth-wrap">
-    <div class="auth-card glass glass--lg rise">
-      <BrandMark size="lg" />
-      <h1 class="mt-7 text-[34px] font-extrabold leading-[1.05] tracking-[-0.03em] silver" style="--lh: 1.05em">
-        С возвращением
+    <div class="auth-card panel">
+      <h1 class="text-[24px] font-bold leading-tight tracking-[-0.02em]">
+        Вход
       </h1>
       <p class="mt-2 text-[15px] text-[var(--text-3)]">
-        Войдите, чтобы писать инструкции, комментировать и видеть прогресс на всех устройствах.
+        Чтобы писать инструкции, комментировать и видеть прогресс на всех устройствах.
       </p>
 
       <form class="mt-7 space-y-3" @submit.prevent="submit">
         <label class="block">
-          <span class="label mb-2 block">email</span>
+          <span class="label mb-1.5 block">Email</span>
           <input v-model="email" type="email" autocomplete="email" required class="field" placeholder="you@example.ru">
         </label>
         <label class="block">
-          <span class="label mb-2 block">пароль</span>
+          <span class="label mb-1.5 block">Пароль</span>
           <input v-model="password" type="password" autocomplete="current-password" required class="field" placeholder="••••••••">
         </label>
         <p v-if="error" class="auth-error" role="alert">
           {{ error }}
         </p>
-        <button class="btn-chrome w-full !mt-5" :disabled="loading">
+        <button class="btn-primary w-full !mt-4" :disabled="loading">
           <LogIn class="size-4" /> {{ loading ? 'Входим…' : 'Войти' }}
         </button>
       </form>
 
       <p class="mt-4 text-[13px] text-[var(--text-4)] leading-snug">
-        Проходили инструкции гостем? После входа прогресс, оценки и голоса перенесутся в аккаунт.
+        Если вы проходили инструкции как гость, прогресс перенесётся в аккаунт.
       </p>
 
       <div class="mt-6 pt-5 border-t border-[var(--line)] text-sm text-[var(--text-3)]">
@@ -85,12 +84,12 @@ async function demoLogin(addr: string) {
       </div>
     </div>
 
-    <div class="demo glass rise" style="--i: 2">
-      <div class="label label--caps">
-        <span class="pearl" />демо-вход
+    <div class="demo panel">
+      <div class="font-semibold text-[15px]">
+        Демо-аккаунты
       </div>
       <p class="mt-2 text-[13.5px] text-[var(--text-3)]">
-        Для жюри: готовые аккаунты с данными. Пароль у всех — <span class="mono text-foreground">demo1234</span>.
+        Аккаунты с готовыми данными. Пароль у всех: <span class="font-mono text-foreground">demo1234</span>
       </p>
       <div class="mt-4 space-y-2">
         <button
@@ -100,7 +99,7 @@ async function demoLogin(addr: string) {
           :disabled="loading"
           @click="demoLogin(d.email)"
         >
-          <span class="ico size-9"><component :is="d.icon" class="size-4" /></span>
+          <span class="icon-box size-8"><component :is="d.icon" class="size-4" /></span>
           <span class="flex-1 min-w-0 text-left">
             <span class="block font-semibold text-[14.5px]">{{ d.role }}</span>
             <span class="block text-[12.5px] text-[var(--text-4)] truncate">{{ d.hint }}</span>
@@ -119,7 +118,7 @@ async function demoLogin(addr: string) {
   gap: 16px;
   max-width: 980px;
   margin: 0 auto;
-  padding: 48px 16px 0;
+  padding: 40px 16px 0;
   align-items: start;
 }
 
@@ -127,30 +126,30 @@ async function demoLogin(addr: string) {
   .auth-wrap {
     grid-template-columns: minmax(0, 460px) 340px;
     justify-content: center;
-    padding-top: 72px;
+    padding-top: 64px;
   }
 }
 
 .auth-card {
-  padding: 32px 26px;
+  padding: 28px 24px;
 }
 
 @media (min-width: 640px) {
   .auth-card {
-    padding: 40px 40px 34px;
+    padding: 32px;
   }
 }
 
 .auth-error {
-  padding: 10px 14px;
-  border-radius: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 14px;
   color: var(--crit);
   background: var(--crit-wash);
 }
 
 .demo {
-  padding: 22px;
+  padding: 20px;
 }
 
 .demo__btn {
@@ -158,18 +157,14 @@ async function demoLogin(addr: string) {
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 16px;
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition: background .2s, transform .16s var(--ease);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  transition: background .15s, border-color .15s;
 }
 
 .demo__btn:hover {
-  background: var(--wash-2);
-}
-
-.demo__btn:active {
-  transform: scale(.98);
+  background: var(--subtle);
+  border-color: var(--line-2);
 }
 </style>

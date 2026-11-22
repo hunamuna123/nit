@@ -46,38 +46,37 @@ const perks = [
 
 <template>
   <div class="auth-wrap">
-    <div class="auth-card glass glass--lg rise">
-      <BrandMark size="lg" />
-      <h1 class="mt-7 text-[34px] font-extrabold leading-[1.05] tracking-[-0.03em] silver" style="--lh: 1.05em">
+    <div class="auth-card panel">
+      <h1 class="text-[24px] font-bold leading-tight tracking-[-0.02em]">
         Создать аккаунт
       </h1>
       <p class="mt-2 text-[15px] text-[var(--text-3)]">
-        Минута — и можно писать свои инструкции, комментировать шаги и предлагать правки.
+        Чтобы писать инструкции, комментировать шаги и предлагать правки.
       </p>
 
       <form class="mt-7 space-y-3" @submit.prevent="submit">
         <label class="block">
-          <span class="label mb-2 block">как вас зовут</span>
+          <span class="label mb-1.5 block">Имя</span>
           <input v-model="name" autocomplete="name" required minlength="2" maxlength="60" class="field" placeholder="Аня Смирнова">
         </label>
         <label class="block">
-          <span class="label mb-2 block">email</span>
+          <span class="label mb-1.5 block">Email</span>
           <input v-model="email" type="email" autocomplete="email" required class="field" placeholder="you@example.ru">
         </label>
         <label class="block">
-          <span class="label mb-2 block">пароль</span>
+          <span class="label mb-1.5 block">Пароль</span>
           <input v-model="password" type="password" autocomplete="new-password" required minlength="6" class="field" placeholder="минимум 6 символов">
         </label>
         <p v-if="error" class="auth-error" role="alert">
           {{ error }}
         </p>
-        <button class="btn-chrome w-full !mt-5" :disabled="loading">
+        <button class="btn-primary w-full !mt-4" :disabled="loading">
           <UserPlus class="size-4" /> {{ loading ? 'Создаём…' : 'Зарегистрироваться' }}
         </button>
       </form>
 
       <p class="mt-4 text-[13px] text-[var(--text-4)] leading-snug">
-        Уже проходили что-то гостем — прогресс и оценки перенесутся в новый аккаунт автоматически.
+        Если вы что-то проходили как гость, прогресс и оценки перенесутся в аккаунт.
       </p>
 
       <div class="mt-6 pt-5 border-t border-[var(--line)] text-sm text-[var(--text-3)]">
@@ -88,14 +87,14 @@ const perks = [
       </div>
     </div>
 
-    <div class="perks glass rise" style="--i: 2">
-      <div class="label label--caps">
-        <span class="pearl" />что даёт аккаунт
+    <div class="perks panel">
+      <div class="font-semibold text-[15px]">
+        Что даёт аккаунт
       </div>
       <ul class="mt-4 space-y-3">
         <li v-for="p in perks" :key="p.text" class="flex items-start gap-3 text-[14.5px] text-[var(--text-2)]">
-          <span class="ico size-9 shrink-0"><component :is="p.icon" class="size-4" /></span>
-          <span class="pt-1.5 leading-snug">{{ p.text }}</span>
+          <span class="icon-box size-8 shrink-0"><component :is="p.icon" class="size-4" /></span>
+          <span class="pt-1 leading-snug">{{ p.text }}</span>
         </li>
       </ul>
     </div>
@@ -109,7 +108,7 @@ const perks = [
   gap: 16px;
   max-width: 980px;
   margin: 0 auto;
-  padding: 48px 16px 0;
+  padding: 40px 16px 0;
   align-items: start;
 }
 
@@ -117,29 +116,29 @@ const perks = [
   .auth-wrap {
     grid-template-columns: minmax(0, 460px) 340px;
     justify-content: center;
-    padding-top: 72px;
+    padding-top: 64px;
   }
 }
 
 .auth-card {
-  padding: 32px 26px;
+  padding: 28px 24px;
 }
 
 @media (min-width: 640px) {
   .auth-card {
-    padding: 40px 40px 34px;
+    padding: 32px;
   }
 }
 
 .auth-error {
-  padding: 10px 14px;
-  border-radius: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 14px;
   color: var(--crit);
   background: var(--crit-wash);
 }
 
 .perks {
-  padding: 22px;
+  padding: 20px;
 }
 </style>

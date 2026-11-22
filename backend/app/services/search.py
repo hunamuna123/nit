@@ -12,9 +12,9 @@ from app.services import ai
 
 RRF_K = 60
 POOL = 40
-# подбирал руками под bge-m3, не трогать
-SEM_MAX_DISTANCE = 0.6
-SEM_BAND = 0.05
+# подбирал руками под rosberta, не трогать
+SEM_MAX_DISTANCE = 0.5
+SEM_BAND = 0.06
 
 
 def _apply_filters[S: Select[*tuple[Any, ...]]](stmt: S, filters: dict[str, Any]) -> S:

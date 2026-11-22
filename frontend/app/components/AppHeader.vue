@@ -25,24 +25,16 @@ async function logout() {
   await auth.logout()
   router.push('/')
 }
-
-const scrolled = ref(false)
-onMounted(() => {
-  const onScroll = () => (scrolled.value = window.scrollY > 8)
-  onScroll()
-  window.addEventListener('scroll', onScroll, { passive: true })
-  onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
-})
 </script>
 
 <template>
-  <header class="header no-print" :class="scrolled && 'header--scrolled'">
-    <div class="header__bar glass glass--pill">
-      <NuxtLink to="/" class="px-2 shrink-0" aria-label="На главную">
+  <header class="header no-print">
+    <div class="header__bar">
+      <NuxtLink to="/" class="shrink-0 mr-4" aria-label="На главную">
         <BrandMark />
       </NuxtLink>
 
-      <nav class="hidden md:flex items-center gap-1 ml-3">
+      <nav class="hidden md:flex items-center gap-1">
         <NuxtLink v-for="l in links" :key="l.to" :to="l.to" class="nav-link" :class="isActive(l.to) && 'nav-link--on'">
           {{ l.label }}
         </NuxtLink>
@@ -69,10 +61,10 @@ onMounted(() => {
       <DropdownMenu v-if="auth.user">
         <DropdownMenuTrigger as-child>
           <button class="rounded-full ml-1" aria-label="Меню профиля">
-            <UserAvatar :id="auth.user.id" :name="auth.user.name" :size="36" />
+            <UserAvatar :id="auth.user.id" :name="auth.user.name" :size="32" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-60 rounded-2xl p-1.5">
+        <DropdownMenuContent align="end" class="w-60">
           <DropdownMenuLabel class="px-2 py-2">
             <div class="font-semibold">
               {{ auth.user.name }}
@@ -106,7 +98,7 @@ onMounted(() => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <NuxtLink v-else :to="{ path: '/login', query: { next: route.fullPath } }" class="btn-chrome btn-chrome--sm ml-1">
+      <NuxtLink v-else :to="{ path: '/login', query: { next: route.fullPath } }" class="btn-primary btn-sm ml-1">
         Войти
       </NuxtLink>
     </div>
@@ -119,34 +111,32 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 40;
-  padding: 14px 16px 0;
-  transition: padding .3s var(--ease);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
+  border-bottom: 1px solid var(--line);
+  -webkit-backdrop-filter: saturate(140%) blur(8px);
+  backdrop-filter: saturate(140%) blur(8px);
 }
 
 .header__bar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  max-width: 1180px;
-  height: 58px;
+  gap: 4px;
+  max-width: 1200px;
+  height: var(--header-h);
   margin: 0 auto;
-  padding: 0 8px 0 12px;
-}
-
-.header--scrolled .header__bar {
-  box-shadow: var(--glass-hi), var(--glass-shadow);
+  padding: 0 20px;
 }
 
 .nav-link {
-  height: 38px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
-  padding: 0 14px;
-  border-radius: 999px;
+  padding: 0 10px;
+  border-radius: 7px;
   font-size: 14.5px;
   font-weight: 500;
   color: var(--text-3);
-  transition: color .2s, background .2s;
+  transition: color .15s, background .15s;
 }
 
 .nav-link:hover {
@@ -156,32 +146,37 @@ onMounted(() => {
 
 .nav-link--on {
   color: var(--foreground);
-  background: var(--wash-2);
-  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .search-btn {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  height: 40px;
-  padding: 0 8px 0 13px;
-  border-radius: 999px;
+  gap: 8px;
+  height: 34px;
+  min-width: 240px;
+  padding: 0 6px 0 10px;
+  border-radius: 8px;
   font-size: 14px;
-  color: var(--text-3);
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition: background .2s, color .2s;
+  color: var(--text-4);
+  background: var(--subtle);
+  border: 1px solid var(--line);
+  transition: border-color .15s, color .15s;
+}
+
+.search-btn > span:nth-child(2) {
+  flex: 1;
+  text-align: left;
 }
 
 .search-btn:hover {
-  color: var(--foreground);
-  background: var(--wash-2);
+  color: var(--text-3);
+  border-color: var(--line-2);
 }
 
 @media (max-width: 1023px) {
   .search-btn {
-    width: 40px;
+    min-width: 0;
+    width: 34px;
     padding: 0;
     justify-content: center;
   }
@@ -190,18 +185,15 @@ onMounted(() => {
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  color: var(--text-2);
-  transition: background .2s, transform .16s var(--ease);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--text-3);
+  transition: background .15s, color .15s;
 }
 
 .icon-btn:hover {
+  color: var(--foreground);
   background: var(--wash);
-}
-
-.icon-btn:active {
-  transform: scale(.9);
 }
 </style>

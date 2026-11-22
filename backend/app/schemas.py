@@ -579,8 +579,8 @@ class AdminStats(BaseModel):
     runs: int
     events: int
     ai_calls_24h: int
-    ai_cost_24h: float
-    ai_cost_total: float
+    ai_tokens_24h: int
+    ai_tokens_total: int
     pending_expert_requests: int
 
 

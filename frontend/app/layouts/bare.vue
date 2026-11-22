@@ -1,6 +1,5 @@
 <template>
-  <div class="relative min-h-dvh">
-    <LiquidBackdrop />
+  <div class="min-h-dvh bg-[var(--subtle)]">
     <slot />
   </div>
 </template>

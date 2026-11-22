@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowRight, Check, CloudOff, ExternalLink, Keyboard, RotateCcw, Sparkles, Undo2, X } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, Check, CloudOff, ExternalLink, Keyboard, RotateCcw, Undo2, X } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import type { GuideDetail, RatingOut } from '~/types/api'
 
@@ -66,16 +66,16 @@ const backLink = computed(() => `/guides/${props.slug}`)
 
 <template>
   <div class="player" :class="embedded && 'player--embed'">
-    <header class="bar glass glass--pill">
+    <header class="bar">
       <NuxtLink v-if="!embedded" :to="backLink" class="icon-btn" aria-label="Выйти из прохождения">
         <X class="size-5" />
       </NuxtLink>
-      <BrandMark v-else size="sm" class="pl-2" />
+      <BrandMark v-else size="sm" class="pl-1" />
       <div class="min-w-0 flex-1 px-2">
         <div class="truncate text-[14px] font-semibold">
           {{ p.run.value?.title ?? 'Загрузка…' }}
         </div>
-        <div class="mono text-[11.5px] text-[var(--text-4)]">
+        <div class="tabular-nums text-[11.5px] text-[var(--text-4)]">
           <template v-if="p.run.value">
             {{ p.finished.value ? 'пройдено' : `шаг ${p.current.value + 1} из ${total}` }} · {{ percent(p.progress.value) }}
             <template v-if="!p.finished.value && leftMinutes"> · осталось ≈ {{ formatMinutes(leftMinutes) }}</template>
@@ -88,15 +88,19 @@ const backLink = computed(() => `/guides/${props.slug}`)
       <span v-else-if="p.syncing.value" class="tag">синхронизация…</span>
       <a v-if="embedded" :href="backLink" target="_blank" class="icon-btn" aria-label="Открыть на сайте"><ExternalLink class="size-4" /></a>
     </header>
-    <div class="px-4 mt-3">
-      <HairlineBar :value="p.progress.value" />
+    <div class="progress">
+      <HairlineBar
+        :value="p.progress.value"
+        :parts="p.steps.value.map(s => isDone(s.key))"
+        :current="p.finished.value ? -1 : p.current.value"
+      />
     </div>
 
-    <div v-if="p.loadError.value" class="glass glass--lg mx-auto mt-16 max-w-lg p-8 text-center">
+    <div v-if="p.loadError.value" class="panel mx-auto mt-16 max-w-lg p-8 text-center">
       <p class="text-lg font-semibold">
         {{ p.loadError.value }}
       </p>
-      <button class="btn-chrome mt-5" @click="p.load()">
+      <button class="btn-primary mt-5" @click="p.load()">
         Повторить
       </button>
     </div>
@@ -106,17 +110,14 @@ const backLink = computed(() => `/guides/${props.slug}`)
     </div>
 
     <section v-else-if="p.finished.value" class="finish mx-auto max-w-2xl px-4 text-center">
-      <img src="/glass/infinity.webp" alt="" class="finish__blob">
-      <SectionLabel code>
-        готово
-      </SectionLabel>
-      <h1 class="mt-4 display silver halo text-[44px] md:text-[68px] leading-[1]">
-        Нить пройдена
+      <span class="finish__icon"><Check class="size-7" /></span>
+      <h1 class="mt-5 page-title">
+        Инструкция пройдена
       </h1>
-      <p class="mt-4 text-[17px] text-[var(--text-2)]">
+      <p class="mt-3 text-[16px] text-[var(--text-3)]">
         Все {{ pl(total, 'шаг', 'шага', 'шагов') }} отмечены. Помогите автору и следующим ученикам — оцените инструкцию.
       </p>
-      <div class="glass glass--lg mt-8 p-6 text-left">
+      <div class="panel mt-8 p-6 text-left">
         <div class="flex flex-wrap items-center justify-between gap-4">
           <span class="font-semibold">Насколько помогло?</span>
           <RatingStars :value="rating" interactive :size="28" @select="rate" />
@@ -126,14 +127,14 @@ const backLink = computed(() => `/guides/${props.slug}`)
           Спасибо! Оценка учтена в индексе полезности.
         </p>
       </div>
-      <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <NuxtLink v-if="!embedded" :to="backLink" class="btn-chrome">
+      <div class="mt-8 flex flex-wrap justify-center gap-2">
+        <NuxtLink v-if="!embedded" :to="backLink" class="btn-primary">
           К инструкции <ArrowRight class="size-4" />
         </NuxtLink>
-        <NuxtLink v-if="!embedded" to="/guides" class="btn-glass">
+        <NuxtLink v-if="!embedded" to="/guides" class="btn-secondary">
           Найти следующую задачу
         </NuxtLink>
-        <button class="btn-glass" @click="p.restart()">
+        <button class="btn-secondary" @click="p.restart()">
           <RotateCcw class="size-4" /> Пройти ещё раз
         </button>
       </div>
@@ -141,8 +142,8 @@ const backLink = computed(() => `/guides/${props.slug}`)
 
     <div v-else-if="step" class="layout">
       <aside class="rail">
-        <div class="label mb-3 px-3">
-          маршрут
+        <div class="label mb-2 px-2.5">
+          Шаги
         </div>
         <button
           v-for="(s, i) in p.steps.value"
@@ -165,21 +166,21 @@ const backLink = computed(() => `/guides/${props.slug}`)
 
       <main class="min-w-0">
         <Transition name="step" mode="out-in">
-          <article :key="step.key" class="card glass glass--lg">
+          <article :key="step.key" class="card panel">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="label label--caps"><span class="pearl" />шаг {{ String(p.current.value + 1).padStart(2, '0') }}</span>
+              <span class="label">Шаг {{ p.current.value + 1 }} из {{ total }}</span>
               <span class="tag">≈ {{ formatMinutes(step.minutes) }}</span>
               <span v-if="stepDone" class="tag tag--ok"><Check class="size-3.5" />выполнен</span>
               <span v-if="p.run.value.outdated" class="tag tag--warn">есть новая версия</span>
             </div>
-            <h1 class="mt-4 text-[28px] md:text-[40px] font-extrabold leading-[1.08] tracking-[-0.03em] silver" style="--lh: 1.08em">
+            <h1 class="mt-4 page-title">
               {{ step.title }}
             </h1>
             <MarkdownView :source="step.body" class="mt-5" />
 
             <div v-if="step.checklist.length" class="mt-7">
               <div class="label mb-3">
-                чек-лист · отметьте, чтобы продолжить
+                Отметьте, чтобы продолжить
               </div>
               <div class="space-y-2">
                 <button
@@ -198,23 +199,23 @@ const backLink = computed(() => `/guides/${props.slug}`)
               </div>
             </div>
 
-            <div class="mt-8 flex flex-wrap items-center gap-3">
-              <button class="btn-glass" :disabled="p.current.value === 0" @click="p.goTo(p.current.value - 1)">
+            <div class="mt-8 flex flex-wrap items-center gap-2">
+              <button class="btn-secondary" :disabled="p.current.value === 0" @click="p.goTo(p.current.value - 1)">
                 <ArrowLeft class="size-4" /> Назад
               </button>
               <div class="flex-1" />
-              <button v-if="stepDone" class="btn-glass btn-glass--sm" @click="p.reopen()">
+              <button v-if="stepDone" class="btn-secondary btn-sm" @click="p.reopen()">
                 <Undo2 class="size-4" /> Снять отметку
               </button>
-              <button class="btn-chrome" :disabled="!p.stepReady.value" @click="p.complete()">
+              <button class="btn-primary" :disabled="!p.stepReady.value" @click="p.complete()">
                 <template v-if="stepDone && p.current.value < total - 1">
                   Дальше <ArrowRight class="size-4" />
                 </template>
                 <template v-else-if="p.current.value === total - 1 || p.state.done.length === total - 1">
-                  <Sparkles class="size-4" /> Завершить
+                  Завершить
                 </template>
                 <template v-else>
-                  Готово — дальше <ArrowRight class="size-4" />
+                  Готово, дальше <ArrowRight class="size-4" />
                 </template>
               </button>
             </div>
@@ -224,7 +225,7 @@ const backLink = computed(() => `/guides/${props.slug}`)
           </article>
         </Transition>
 
-        <div class="mt-4 glass p-4">
+        <div class="mt-4 panel p-4">
           <RunStepTools
             ref="tools"
             :slug="slug"
@@ -239,8 +240,8 @@ const backLink = computed(() => `/guides/${props.slug}`)
           <button
             v-for="(s, i) in p.steps.value"
             :key="s.key"
-            class="dot"
-            :class="{ 'dot--on': i === p.current.value, 'dot--done': isDone(s.key) }"
+            class="pager"
+            :class="{ 'pager--on': i === p.current.value, 'pager--done': isDone(s.key) }"
             :aria-label="`Шаг ${i + 1}`"
             @click="p.goTo(i)"
           />
@@ -253,53 +254,55 @@ const backLink = computed(() => `/guides/${props.slug}`)
 <style scoped>
 .player {
   min-height: 100dvh;
-  padding: 14px 0 60px;
+  padding-bottom: 60px;
 }
 
 .bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
   align-items: center;
   gap: 6px;
-  max-width: 1180px;
-  height: 60px;
-  margin: 0 12px;
+  height: 56px;
   padding: 0 12px 0 8px;
+  background: var(--background);
 }
 
-@media (min-width: 1204px) {
-  .bar { margin: 0 auto; }
-}
-
-.player .px-4.mt-3 {
-  max-width: 1180px;
-  margin-left: auto;
-  margin-right: auto;
+.progress {
+  position: sticky;
+  top: 56px;
+  z-index: 19;
+  padding: 6px 12px;
+  background: var(--background);
+  border-bottom: 1px solid var(--line);
 }
 
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  color: var(--text-2);
-  transition: background .2s;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--text-3);
+  transition: background .15s, color .15s;
 }
 
 .icon-btn:hover {
+  color: var(--foreground);
   background: var(--wash);
 }
 
 .layout {
   display: grid;
   gap: 24px;
-  max-width: 1180px;
+  max-width: 1120px;
   margin: 28px auto 0;
   padding: 0 16px;
 }
 
 @media (min-width: 1024px) {
-  .layout { grid-template-columns: 270px 1fr; }
+  .layout { grid-template-columns: 250px 1fr; }
 }
 
 .rail {
@@ -310,20 +313,41 @@ const backLink = computed(() => `/guides/${props.slug}`)
   .rail {
     display: block;
     position: sticky;
-    top: 24px;
+    top: 96px;
     align-self: start;
   }
 }
 
 .rail__item {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 10px;
   width: 100%;
-  padding: 9px 12px;
-  border-radius: 16px;
+  padding: 7px 10px;
+  border-radius: 8px;
   color: var(--text-3);
-  transition: background .2s, color .2s;
+  transition: background .15s, color .15s;
+}
+
+.rail__item > span:last-child {
+  padding-top: 2px;
+}
+
+/* нить между кружками шагов, пройденный кусок красим */
+.rail__item:not(:last-of-type)::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 29px;
+  bottom: -7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.rail__item--done:not(:last-of-type)::before {
+  background: var(--primary);
 }
 
 .rail__item:hover {
@@ -334,96 +358,88 @@ const backLink = computed(() => `/guides/${props.slug}`)
 .rail__item--on {
   color: var(--foreground);
   background: var(--wash-2);
-  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .rail__dot {
   flex: none;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  font-family: var(--font-mono);
   font-size: 11.5px;
-  box-shadow: inset 0 0 0 1px var(--line-2);
+  font-weight: 600;
+  border: 1px solid var(--line-2);
 }
 
 .rail__item--on .rail__dot {
-  background: var(--pearl);
-  box-shadow: var(--pearl-glow);
-  color: #0b0c0e;
+  color: var(--primary);
+  border-color: var(--primary);
 }
 
 .rail__item--done .rail__dot {
-  color: var(--on-chrome);
-  background: var(--chrome);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8);
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .card {
-  padding: 28px 22px;
+  padding: 24px 20px;
 }
 
 @media (min-width: 768px) {
-  .card { padding: 40px 44px; }
+  .card { padding: 36px 40px; }
 }
 
 .check {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
-  min-height: 58px;
-  padding: 12px 16px;
-  border-radius: 18px;
-  font-size: 15.5px;
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1px var(--line);
-  transition: background .25s var(--ease), box-shadow .25s var(--ease), transform .16s var(--ease);
+  min-height: 52px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: background .15s, border-color .15s;
 }
 
 .check:hover {
-  background: var(--wash-2);
-}
-
-.check:active {
-  transform: scale(.985);
+  border-color: var(--line-2);
 }
 
 .check__box {
   flex: none;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   color: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--line-2);
-  transition: all .3s var(--spring);
+  border: 1.5px solid var(--line-2);
+  transition: background .15s, border-color .15s, color .15s;
 }
 
 .check--on {
-  background: var(--ok-wash);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ok) 35%, transparent);
+  background: var(--subtle);
 }
 
 .check--on .check__box {
-  color: var(--on-chrome);
-  background: var(--chrome);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 0 14px rgba(200, 230, 215, .35);
-  transform: scale(1.06);
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .check--on > span:nth-child(2) {
-  color: var(--text-2);
+  color: var(--text-3);
 }
 
 .dots {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   margin-top: 20px;
 }
 
@@ -431,61 +447,45 @@ const backLink = computed(() => `/guides/${props.slug}`)
   .dots { display: none; }
 }
 
-.dot {
-  width: 10px;
-  height: 10px;
+.pager {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--line-2);
-  transition: all .3s var(--ease);
+  transition: width .2s, background .2s;
 }
 
-.dot--done {
-  background: var(--text-3);
+.pager--done {
+  background: var(--text-4);
 }
 
-.dot--on {
-  width: 28px;
-  border-radius: 6px;
-  background: var(--pearl);
-  box-shadow: var(--pearl-glow);
+.pager--on {
+  width: 22px;
+  border-radius: 4px;
+  background: var(--primary);
 }
 
 .finish {
-  position: relative;
-  padding-top: 70px;
+  padding-top: 64px;
 }
 
-.finish__blob {
-  width: min(360px, 80vw);
-  margin: 0 auto -40px;
-  animation: float 6s ease-in-out infinite alternate;
-  filter: drop-shadow(0 30px 50px rgba(0, 0, 0, .45));
-}
-
-@keyframes float {
-  to { transform: translateY(-14px) rotate(6deg); }
+.finish__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: var(--ok);
+  background: var(--ok-wash);
 }
 
 .step-enter-active,
 .step-leave-active {
-  transition: opacity .28s var(--ease), transform .28s var(--ease);
+  transition: opacity .18s ease;
 }
 
-.step-enter-from {
-  opacity: 0;
-  transform: translateX(24px);
-}
-
+.step-enter-from,
 .step-leave-to {
   opacity: 0;
-  transform: translateX(-24px);
-}
-
-.player--embed {
-  padding-top: 10px;
-}
-
-.player--embed .bar {
-  margin: 0 10px;
 }
 </style>

@@ -84,56 +84,56 @@ const dayLabel = (iso: string) => new Date(iso).toLocaleDateString('ru-RU', { da
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1240px] px-5 pt-10">
-    <div v-if="error" class="glass glass--lg p-10 text-center">
+  <div class="mx-auto max-w-[1200px] px-5 pt-8">
+    <div v-if="error" class="panel p-10 text-center">
       <p class="text-lg font-semibold">
         {{ apiErrorMessage(error, 'Аналитика недоступна') }}
       </p>
-      <NuxtLink :to="`/studio/${id}`" class="btn-chrome mt-5">
+      <NuxtLink :to="`/studio/${id}`" class="btn-primary mt-5">
         В редактор
       </NuxtLink>
     </div>
 
     <template v-else-if="a && totals">
       <div class="flex flex-wrap items-end justify-between gap-6">
-        <div class="scrim min-w-0">
+        <div class="min-w-0">
           <NuxtLink to="/studio" class="label hover:text-foreground">
-            <ArrowLeft class="size-3.5" /> студия
+            <ArrowLeft class="size-3.5" /> Студия
           </NuxtLink>
-          <h1 class="mt-4 text-[32px] md:text-[48px] font-extrabold leading-[1.05] silver" style="--lh: 1.05em">
+          <h1 class="mt-3 page-title">
             {{ a.title }}
           </h1>
           <p class="mt-2 text-[var(--text-3)]">
-            Где ученики спотыкаются и что с этим делать
+            Где люди застревают и что с этим делать
           </p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <NuxtLink :to="`/studio/${id}`" class="btn-glass btn-glass--sm">
+          <NuxtLink :to="`/studio/${id}`" class="btn-secondary btn-sm">
             <PenLine class="size-4" /> Редактор
           </NuxtLink>
-          <NuxtLink :to="`/guides/${a.slug}`" class="btn-glass btn-glass--sm">
+          <NuxtLink :to="`/guides/${a.slug}`" class="btn-secondary btn-sm">
             <Eye class="size-4" /> Страница
           </NuxtLink>
         </div>
       </div>
 
       <div class="mt-6 flex flex-wrap items-center gap-2">
-        <span class="label mr-1">версия</span>
+        <span class="label mr-1">Версия</span>
         <button
           v-for="v in [...a.versions].reverse()"
           :key="v.id"
-          class="chip !h-9"
+          class="chip"
           :class="a.version.id === v.id && 'chip--on'"
           @click="versionId = v.id === a.versions.at(-1)?.id ? null : v.id"
         >
-          v{{ v.number }} <span class="mono text-[11px] opacity-60">{{ v.runs }}</span>
+          v{{ v.number }} <span class="tabular-nums text-[11px] opacity-60">{{ v.runs }}</span>
         </button>
-        <span v-if="status === 'pending'" class="label">загружаем…</span>
+        <span v-if="status === 'pending'" class="label">Загружаем…</span>
       </div>
 
       <div class="mt-6 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
         <div
-v-for="(k, i) in [
+v-for="k in [
           { l: 'прохождений', v: formatNumber(totals.runs) },
           { l: 'дошли до конца', v: percent(totals.completion_rate) },
           { l: 'бросили', v: formatNumber(totals.abandoned) },
@@ -141,62 +141,62 @@ v-for="(k, i) in [
           { l: 'медиана времени', v: totals.median_total_minutes != null ? formatMinutes(Math.round(totals.median_total_minutes)) : '—' },
           { l: 'рейтинг', v: totals.rating?.toFixed(1) ?? '—' },
           { l: '«полезно»', v: percent(totals.helpful_ratio) },
-        ]" :key="k.l" class="glass p-4 rise" :style="{ '--i': i }"
+        ]" :key="k.l" class="panel p-4"
         >
-          <div class="label !text-[11px]">
-            {{ k.l }}
+          <div class="label !text-[12px] !whitespace-normal">
+            {{ k.l[0]!.toUpperCase() + k.l.slice(1) }}
           </div>
-          <div class="mt-2 mono text-[26px] font-semibold leading-none">
+          <div class="mt-2 tabular-nums text-[22px] font-semibold leading-none">
             {{ k.v }}
           </div>
         </div>
       </div>
 
-      <section class="mt-12">
+      <section class="mt-10">
         <div class="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <SectionLabel num="01">
-              узкие места
-            </SectionLabel>
-            <h2 class="mt-3 text-[28px] md:text-[36px] font-extrabold silver">
-              {{ problems.length ? `${pl(problems.length, 'шаг требует', 'шага требуют', 'шагов требуют')} внимания` : 'Ученики проходят ровно' }}
+            <h2 class="section-title">
+              Узкие места
             </h2>
+            <p class="mt-1 text-[14px] text-[var(--text-3)]">
+              {{ problems.length ? `${pl(problems.length, 'шаг требует', 'шага требуют', 'шагов требуют')} внимания` : 'Проблемных шагов нет' }}
+            </p>
           </div>
-          <button v-if="problems.length && isLatest" class="btn-chrome" :disabled="analyzing" @click="analyze">
+          <button v-if="problems.length && isLatest" class="btn-primary" :disabled="analyzing" @click="analyze">
             <Sparkles class="size-4" :class="analyzing && 'animate-pulse'" />
-            {{ analyzing ? 'ИИ читает комментарии…' : insights ? 'Разобрать заново' : 'Разобрать с ИИ' }}
+            {{ analyzing ? 'Читаем комментарии…' : insights ? 'Разобрать заново' : 'Разобрать с ИИ' }}
           </button>
         </div>
-        <p v-if="insights" class="mt-4 glass p-4 text-[15px] text-[var(--text-2)]">
+        <p v-if="insights" class="mt-4 panel p-4 text-[14.5px] text-[var(--text-2)]">
           <Sparkles class="size-4 inline mr-1.5 text-[var(--ice)]" />{{ insights.summary }}
         </p>
 
-        <div v-if="problems.length" class="mt-6 grid gap-4 lg:grid-cols-2">
-          <article v-for="(s, i) in problems" :key="s.key" class="problem glass glass--lg rise" :class="`problem--${s.level}`" :style="{ '--i': i }">
+        <div v-if="problems.length" class="mt-4 grid gap-4 lg:grid-cols-2">
+          <article v-for="s in problems" :key="s.key" class="problem panel" :class="`problem--${s.level}`">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
                   <span class="tag" :class="LEVEL[s.level].cls">
                     <component :is="LEVEL[s.level].icon" class="size-3.5" />{{ LEVEL[s.level].label }}
                   </span>
-                  <span class="label">шаг {{ String(s.position + 1).padStart(2, '0') }}</span>
+                  <span class="label">Шаг {{ s.position + 1 }}</span>
                 </div>
-                <h3 class="mt-3 text-[20px] font-bold leading-snug">
+                <h3 class="mt-2.5 text-[17px] font-semibold leading-snug">
                   {{ s.title }}
                 </h3>
               </div>
               <div class="text-right shrink-0">
-                <div class="display text-[40px] leading-none" :class="s.level === 'critical' ? 'text-[var(--crit)]' : 'text-[var(--warn)]'">
+                <div class="text-[24px] font-semibold tabular-nums leading-none" :class="s.level === 'critical' ? 'text-[var(--crit)]' : 'text-[var(--warn)]'">
                   {{ s.score }}
                 </div>
                 <div class="label !text-[10.5px] mt-1">
-                  индекс
+                  Индекс
                 </div>
               </div>
             </div>
             <ul class="mt-4 space-y-1.5">
               <li v-for="r in s.reasons" :key="r" class="flex items-center gap-2 text-[14px] text-[var(--text-2)]">
-                <span class="pearl pearl--sm" />{{ r }}
+                <span class="dot dot--sm text-[var(--text-4)]" />{{ r }}
               </li>
               <li v-if="s.prev_drop_rate != null" class="flex items-center gap-2 text-[14px]" :class="(deltaDrop(s) ?? 0) < 0 ? 'text-[var(--ok)]' : 'text-[var(--crit)]'">
                 <component :is="(deltaDrop(s) ?? 0) < 0 ? ArrowDownRight : ArrowUpRight" class="size-4" />
@@ -206,7 +206,7 @@ v-for="(k, i) in [
 
             <div v-if="insightFor(s.key)" class="insight">
               <div class="label mb-2">
-                <Sparkles class="size-3.5" /> разбор ии
+                <Sparkles class="size-3.5" /> Разбор ИИ
               </div>
               <p class="text-[14px] text-[var(--text-2)]">
                 <b class="text-foreground">Почему:</b> {{ insightFor(s.key)!.diagnosis }}
@@ -215,46 +215,46 @@ v-for="(k, i) in [
                 <b class="text-foreground">Что сделать:</b> {{ insightFor(s.key)!.recommendation }}
               </p>
               <div class="mt-4 flex flex-wrap gap-2">
-                <button class="btn-glass btn-glass--sm" @click="showDiff = insightFor(s.key)!">
+                <button class="btn-secondary btn-sm" @click="showDiff = insightFor(s.key)!">
                   Новая редакция шага
                 </button>
-                <button v-if="!applied.has(s.key)" class="btn-chrome btn-chrome--sm" @click="applyInsight(insightFor(s.key)!)">
+                <button v-if="!applied.has(s.key)" class="btn-primary btn-sm" @click="applyInsight(insightFor(s.key)!)">
                   <Check class="size-4" /> В черновик
                 </button>
-                <span v-else class="tag tag--ok h-[38px]"><Check class="size-3.5" />в черновике</span>
+                <span v-else class="tag tag--ok !h-[34px]"><Check class="size-3.5" />в черновике</span>
               </div>
             </div>
           </article>
         </div>
-        <div v-else class="mt-6 glass p-6 flex items-center gap-4">
-          <span class="ico text-[var(--ok)]"><CircleCheck class="size-5" /></span>
+        <div v-else class="mt-4 panel p-5 flex items-center gap-4">
+          <span class="icon-box text-[var(--ok)]"><CircleCheck class="size-5" /></span>
           <p class="text-[var(--text-2)]">
-            Ни на одном шаге нет аномальных потерь, задержек или жалоб. Так держать!
+            Ни на одном шаге нет заметных потерь, задержек или жалоб.
           </p>
         </div>
       </section>
 
-      <section class="mt-12">
-        <SectionLabel num="02">
-          воронка по шагам · v{{ a.version.number }}
-        </SectionLabel>
-        <div class="mt-5 glass glass--lg p-2 md:p-4 overflow-x-auto">
+      <section class="mt-10">
+        <h2 class="section-title">
+          Воронка по шагам · v{{ a.version.number }}
+        </h2>
+        <div class="mt-4 panel overflow-x-auto">
           <table class="funnel w-full min-w-[920px]">
             <thead>
               <tr>
                 <th class="w-[34%]">
-                  шаг
+                  Шаг
                 </th>
                 <th class="w-[22%]">
-                  дошли
+                  Дошли
                 </th>
-                <th>бросили</th>
-                <th>время</th>
+                <th>Бросили</th>
+                <th>Время</th>
                 <th><ThumbsUp class="size-3.5 inline" /> / <ThumbsDown class="size-3.5 inline" /></th>
                 <th><LifeBuoy class="size-3.5 inline" /></th>
                 <th><MessageSquare class="size-3.5 inline" /></th>
                 <th class="text-right">
-                  индекс
+                  Индекс
                 </th>
               </tr>
             </thead>
@@ -262,7 +262,7 @@ v-for="(k, i) in [
               <tr v-for="s in a.steps" :key="s.key" :class="`row--${s.level}`">
                 <td>
                   <div class="flex items-center gap-3">
-                    <span class="mono text-[12px] text-[var(--text-4)] w-6">{{ String(s.position + 1).padStart(2, '0') }}</span>
+                    <span class="tabular-nums text-[12px] text-[var(--text-4)] w-6">{{ s.position + 1 }}</span>
                     <span class="font-medium text-[14px] leading-snug">{{ s.title }}</span>
                   </div>
                 </td>
@@ -270,28 +270,28 @@ v-for="(k, i) in [
                   <div class="bar">
                     <span class="bar__fill" :style="{ width: `${(s.reached / maxReached) * 100}%` }" />
                   </div>
-                  <div class="mt-1 mono text-[12px] text-[var(--text-3)]">
+                  <div class="mt-1 tabular-nums text-[12px] text-[var(--text-3)]">
                     {{ s.reached }} · {{ percent(totals.runs ? s.reached / totals.runs : 0) }}
                   </div>
                 </td>
                 <td>
-                  <span class="mono text-[13px]" :class="s.drop_rate >= 0.08 && s.dropped >= 2 ? 'text-[var(--crit)]' : 'text-[var(--text-2)]'">{{ percent(s.drop_rate) }}</span>
-                  <span v-if="deltaDrop(s) != null && Math.abs(deltaDrop(s)!) >= 0.01" class="delta mono" :class="deltaDrop(s)! < 0 ? 'delta--good' : 'delta--bad'">
+                  <span class="tabular-nums text-[13px]" :class="s.drop_rate >= 0.08 && s.dropped >= 2 ? 'text-[var(--crit)]' : 'text-[var(--text-2)]'">{{ percent(s.drop_rate) }}</span>
+                  <span v-if="deltaDrop(s) != null && Math.abs(deltaDrop(s)!) >= 0.01" class="delta tabular-nums" :class="deltaDrop(s)! < 0 ? 'delta--good' : 'delta--bad'">
                     {{ deltaDrop(s)! < 0 ? '↓' : '↑' }}{{ Math.abs(Math.round(deltaDrop(s)! * 100)) }} п.п.
                   </span>
                 </td>
-                <td class="mono text-[13px]">
+                <td class="tabular-nums text-[13px]">
                   <span class="text-[var(--text-2)]">{{ formatSeconds(s.median_seconds) }}</span>
                   <span class="text-[var(--text-4)]"> / {{ s.minutes }} мин</span>
                   <span v-if="s.time_ratio && s.time_ratio >= 1.6" class="block text-[11.5px] text-[var(--warn)]">×{{ s.time_ratio.toFixed(1) }}</span>
                 </td>
-                <td class="mono text-[13px] text-[var(--text-2)]">
+                <td class="tabular-nums text-[13px] text-[var(--text-2)]">
                   {{ s.up }} / <span :class="s.down > s.up ? 'text-[var(--crit)]' : ''">{{ s.down }}</span>
                 </td>
-                <td class="mono text-[13px]" :class="s.stuck >= 5 ? 'text-[var(--warn)]' : 'text-[var(--text-2)]'">
+                <td class="tabular-nums text-[13px]" :class="s.stuck >= 5 ? 'text-[var(--warn)]' : 'text-[var(--text-2)]'">
                   {{ s.stuck }}
                 </td>
-                <td class="mono text-[13px] text-[var(--text-2)]">
+                <td class="tabular-nums text-[13px] text-[var(--text-2)]">
                   {{ s.comments }}<span v-if="s.suggestions" class="text-[var(--ice)]"> +{{ pl(s.suggestions, 'правка', 'правки', 'правок') }}</span>
                 </td>
                 <td class="text-right">
@@ -304,17 +304,17 @@ v-for="(k, i) in [
           </table>
         </div>
         <p class="mt-3 text-[12.5px] text-[var(--text-4)] max-w-3xl">
-          Индекс 0–100: 50% — доля бросивших среди дошедших, 20% — превышение времени над заявленным, 15% — «не полезно», 15% — нажатия «Застрял».
+          Индекс 0–100: 50% доля бросивших среди дошедших, 20% превышение времени над заявленным, 15% «не полезно», 15% нажатия «Застрял».
           Прохождение считается брошенным после 30 минут без активности.
         </p>
       </section>
 
-      <section class="mt-12 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        <div class="glass glass--lg p-6">
+      <section class="mt-10 grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <div class="panel p-5">
           <div class="flex flex-wrap items-center justify-between gap-3">
-            <SectionLabel num="03">
-              динамика · 30 дней
-            </SectionLabel>
+            <h2 class="section-title">
+              Динамика · 30 дней
+            </h2>
             <div class="flex items-center gap-4 text-[12.5px] text-[var(--text-3)]">
               <span class="flex items-center gap-1.5"><i class="legend legend--a" />начали</span>
               <span class="flex items-center gap-1.5"><i class="legend legend--b" />завершили</span>
@@ -328,34 +328,34 @@ v-for="(k, i) in [
                 <div class="font-semibold">
                   {{ dayLabel(d.day) }}
                 </div>
-                <div><i class="legend legend--a" /> начали: <b class="mono">{{ d.started }}</b></div>
-                <div><i class="legend legend--b" /> завершили: <b class="mono">{{ d.completed }}</b></div>
+                <div><i class="legend legend--a" /> начали: <b class="tabular-nums">{{ d.started }}</b></div>
+                <div><i class="legend legend--b" /> завершили: <b class="tabular-nums">{{ d.completed }}</b></div>
               </div>
             </div>
           </div>
-          <div class="mt-2 flex justify-between mono text-[11px] text-[var(--text-4)]">
+          <div class="mt-2 flex justify-between tabular-nums text-[11px] text-[var(--text-4)]">
             <span>{{ timeline[0] && dayLabel(timeline[0].day) }}</span>
             <span>сегодня</span>
           </div>
         </div>
 
-        <div class="glass glass--lg p-6">
-          <SectionLabel num="04">
-            версии
-          </SectionLabel>
-          <div class="mt-5 space-y-4">
+        <div class="panel p-5">
+          <h2 class="section-title">
+            Версии
+          </h2>
+          <div class="mt-4 space-y-4">
             <div v-for="v in [...a.versions].reverse()" :key="v.id">
               <div class="flex items-center justify-between gap-3 text-[14px]">
                 <span class="flex items-center gap-2 min-w-0">
-                  <span class="tag shrink-0" :class="v.id === a.version.id && 'tag--lit'">v{{ v.number }}</span>
+                  <span class="tag shrink-0" :class="v.id === a.version.id && 'tag--strong'">v{{ v.number }}</span>
                   <span class="truncate text-[var(--text-2)]">{{ v.changelog || 'без описания' }}</span>
                 </span>
-                <span class="mono shrink-0">{{ percent(v.completion_rate) }}</span>
+                <span class="tabular-nums shrink-0">{{ percent(v.completion_rate) }}</span>
               </div>
               <div class="bar mt-2">
                 <span class="bar__fill" :style="{ width: `${v.completion_rate * 100}%` }" />
               </div>
-              <div class="mt-1 mono text-[11.5px] text-[var(--text-4)]">
+              <div class="mt-1 tabular-nums text-[11.5px] text-[var(--text-4)]">
                 {{ pl(v.runs, 'прохождение', 'прохождения', 'прохождений') }} · {{ formatDate(v.published_at) }}
               </div>
             </div>
@@ -383,13 +383,13 @@ v-for="(k, i) in [
         <template v-if="showDiff">
           <TextDiff :before="currentStep(showDiff.step_key)?.body ?? ''" :after="showDiff.proposed_body" mode="preview" />
           <div v-if="showDiff.proposed_checklist.length" class="flex flex-wrap gap-1.5">
-            <span v-for="c in showDiff.proposed_checklist" :key="c" class="tag tag--ok">☐ {{ c }}</span>
+            <span v-for="c in showDiff.proposed_checklist" :key="c" class="tag tag--ok">{{ c }}</span>
           </div>
           <div class="flex justify-end gap-2">
-            <button class="btn-glass btn-glass--sm" @click="showDiff = null">
+            <button class="btn-secondary btn-sm" @click="showDiff = null">
               Закрыть
             </button>
-            <button class="btn-chrome btn-chrome--sm" :disabled="applied.has(showDiff.step_key)" @click="applyInsight(showDiff)">
+            <button class="btn-primary btn-sm" :disabled="applied.has(showDiff.step_key)" @click="applyInsight(showDiff)">
               <Check class="size-4" /> Применить в черновик
             </button>
           </div>
@@ -401,39 +401,37 @@ v-for="(k, i) in [
 
 <style scoped>
 .problem {
-  padding: 22px;
+  padding: 18px;
+  border-left-width: 3px;
 }
 
-.problem--critical::before {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--crit) 70%, transparent), rgba(255, 255, 255, .05) 45%, color-mix(in srgb, var(--crit) 35%, transparent));
+.problem--critical {
+  border-left-color: var(--crit);
 }
 
-.problem--warn::before {
-  background: linear-gradient(135deg, color-mix(in srgb, var(--warn) 60%, transparent), rgba(255, 255, 255, .05) 45%, color-mix(in srgb, var(--warn) 30%, transparent));
+.problem--warn {
+  border-left-color: var(--warn);
 }
 
 .insight {
-  margin-top: 18px;
-  padding: 16px;
-  border-radius: 18px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 8px;
   background: var(--ice-wash);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ice) 25%, transparent);
 }
 
 .funnel {
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
 }
 
 .funnel th {
-  padding: 10px 12px;
+  padding: 10px 14px;
   text-align: left;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: .08em;
   color: var(--text-4);
+  background: var(--subtle);
+  border-bottom: 1px solid var(--line);
 }
 
 .funnel td:not(:first-child) {
@@ -441,8 +439,11 @@ v-for="(k, i) in [
 }
 
 .funnel td {
-  padding: 12px;
+  padding: 12px 14px;
   vertical-align: middle;
+}
+
+.funnel tbody tr + tr td {
   border-top: 1px solid var(--line);
 }
 
@@ -454,31 +455,19 @@ v-for="(k, i) in [
   background: var(--warn-wash);
 }
 
-.funnel tr td:first-child {
-  border-radius: 14px 0 0 14px;
-}
-
-.funnel tr td:last-child {
-  border-radius: 0 14px 14px 0;
-}
-
 .bar {
-  height: 6px;
-  border-radius: 6px;
-  background: var(--line);
+  height: 5px;
+  border-radius: 5px;
+  background: var(--wash-2);
   overflow: hidden;
 }
 
 .bar__fill {
   display: block;
   height: 100%;
-  border-radius: 6px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .3), #fff);
-  transition: width .6s var(--ease);
-}
-
-:root:not(.dark) .bar__fill {
-  background: linear-gradient(90deg, rgba(20, 25, 35, .3), #1a1d22);
+  border-radius: inherit;
+  background: var(--primary);
+  transition: width .4s var(--ease);
 }
 
 .delta {
@@ -498,10 +487,9 @@ v-for="(k, i) in [
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  font-family: var(--font-mono);
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
   font-size: 12.5px;
   font-weight: 600;
 }
@@ -521,16 +509,10 @@ v-for="(k, i) in [
   background: var(--crit-wash);
 }
 
-.dark .chart,
-.dark .legend {
-  --series-a: #3987e5;
-  --series-b: #199e70;
-}
-
 .chart,
 .legend {
-  --series-a: #2a78d6;
-  --series-b: #1baf7a;
+  --series-a: var(--chart-1);
+  --series-b: var(--chart-2);
 }
 
 .legend {
@@ -571,14 +553,14 @@ v-for="(k, i) in [
 
 .chart__col:hover {
   background: var(--wash);
-  border-radius: 6px 6px 0 0;
+  border-radius: 4px 4px 0 0;
 }
 
 .chart__bar {
   width: 40%;
   max-width: 9px;
   min-height: 2px;
-  border-radius: 4px 4px 0 0;
+  border-radius: 3px 3px 0 0;
 }
 
 .chart__bar--a {
@@ -596,14 +578,15 @@ v-for="(k, i) in [
   left: 50%;
   transform: translateX(-20%);
   min-width: 150px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
   font-size: 12.5px;
   line-height: 1.6;
   white-space: nowrap;
   color: var(--popover-foreground);
   background: var(--popover);
-  box-shadow: var(--glass-hi), var(--glass-shadow-sm), inset 0 0 0 1px var(--line-2);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
   pointer-events: none;
 }
 

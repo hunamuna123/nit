@@ -1,11 +1,20 @@
+import asyncio
 import copy
 import hashlib
 import json
 import logging
 import math
+import os
+import re
+import ssl
+import threading
+import time
+import uuid
 from datetime import timedelta
+from pathlib import Path
 from typing import Any
 
+import certifi
 import httpx
 from fastapi import HTTPException, status
 from pydantic import BaseModel, ValidationError
@@ -27,21 +36,19 @@ from app.schemas import (
 log = logging.getLogger("nit.ai")
 
 _client: httpx.AsyncClient | None = None
+_token: str = ""
+_token_exp: float = 0.0
+_token_lock = asyncio.Lock()
+CA_FILE = Path(__file__).resolve().parent.parent / "certs" / "russian_trusted_root_ca.pem"
 
 
 def client() -> httpx.AsyncClient:
     global _client
     if _client is None:
-        s = get_settings()
-        _client = httpx.AsyncClient(
-            base_url=s.openrouter_base_url,
-            timeout=s.ai_timeout_s,
-            headers={
-                "Authorization": f"Bearer {s.openrouter_api_key}",
-                "HTTP-Referer": "http://localhost:3000",
-                "X-Title": "Nit guides",
-            },
-        )
+        # у сбера сертификаты от минцифры, в certifi их нет
+        ctx = ssl.create_default_context(cafile=certifi.where())
+        ctx.load_verify_locations(CA_FILE)
+        _client = httpx.AsyncClient(verify=ctx, timeout=get_settings().ai_timeout_s)
     return _client
 
 
@@ -52,8 +59,40 @@ async def close() -> None:
         _client = None
 
 
+async def _access_token(force: bool = False) -> str:
+    global _token, _token_exp
+    async with _token_lock:
+        if not force and _token and time.time() < _token_exp - 60:
+            return _token
+        s = get_settings()
+        r = await client().post(
+            s.gigachat_oauth_url,
+            headers={
+                "Authorization": f"Basic {s.gigachat_auth_key}",
+                "RqUID": str(uuid.uuid4()),
+                "Accept": "application/json",
+            },
+            data={"scope": s.gigachat_scope},
+        )
+        r.raise_for_status()
+        data = r.json()
+        _token = data["access_token"]
+        _token_exp = data["expires_at"] / 1000
+        return _token
+
+
+async def _chat(body: dict[str, Any]) -> httpx.Response:
+    url = f"{get_settings().gigachat_base_url}/chat/completions"
+    r = await client().post(
+        url, json=body, headers={"Authorization": f"Bearer {await _access_token()}"}
+    )
+    if r.status_code == 401:
+        token = await _access_token(force=True)
+        r = await client().post(url, json=body, headers={"Authorization": f"Bearer {token}"})
+    return r
+
+
 def strict_schema(model: type[BaseModel]) -> dict[str, Any]:
-    # openrouter strict хочет схему без $ref и все поля required, вот и мучаемся
     schema = model.model_json_schema()
     defs = schema.pop("$defs", {})
 
@@ -78,6 +117,33 @@ def strict_schema(model: type[BaseModel]) -> dict[str, Any]:
         return out
 
     return walk(schema)
+
+
+def shape(node: dict[str, Any]) -> Any:
+    # json schema гигачат путает с ответом, а пример формы понимает норм
+    if "anyOf" in node:
+        node = next((x for x in node["anyOf"] if x.get("type") != "null"), node["anyOf"][0])
+    if "enum" in node:
+        return "|".join(map(str, node["enum"]))
+    kind = node.get("type")
+    if kind == "object":
+        return {k: shape(v) for k, v in node.get("properties", {}).items()}
+    if kind == "array":
+        return [shape(node.get("items", {}))]
+    return {"integer": 0, "number": 0, "boolean": False}.get(str(kind), "...")
+
+
+def _objects(text: str) -> list[Any]:
+    decoder = json.JSONDecoder(strict=False)
+    found, i = [], text.find("{")
+    while i != -1:
+        try:
+            obj, end = decoder.raw_decode(text, i)
+            found.append(obj)
+            i = text.find("{", end)
+        except json.JSONDecodeError:
+            i = text.find("{", i + 1)
+    return found
 
 
 async def remaining_for(session: AsyncSession, user: User | None) -> int:
@@ -130,14 +196,14 @@ async def structured[T: BaseModel](
     temperature: float = 0.4,
 ) -> T:
     s = get_settings()
+    # function calling у гигачата ломает длинный markdown, поэтому просто json в тексте
+    example = json.dumps(shape(strict_schema(model)), ensure_ascii=False)
     body = {
         "model": s.ai_model,
-        "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {"name": kind, "strict": True, "schema": strict_schema(model)},
-        },
-        "reasoning": {"enabled": False},
+        "messages": [
+            {"role": "system", "content": f"{system}\n\n{JSON_RULE}\n{example}"},
+            {"role": "user", "content": prompt},
+        ],
         "max_tokens": max_tokens,
         "temperature": temperature,
     }
@@ -145,31 +211,42 @@ async def structured[T: BaseModel](
     for _attempt in range(2):
         usage: dict[str, Any] = {}
         try:
-            r = await client().post("/chat/completions", json=body)
+            r = await _chat(body)
             data = r.json()
             usage = data.get("usage") or {}
             if r.status_code != 200 or "choices" not in data:
-                last_error = str(data.get("error", {}).get("message", r.status_code))
+                last_error = str(data.get("message", r.status_code))
                 await _log(session, user, kind, usage, ok=False)
                 continue
             content = data["choices"][0]["message"].get("content") or ""
-            parsed = model.model_validate(json.loads(_strip_fences(content)))
-            await _log(session, user, kind, usage, ok=True)
-            return parsed
-        except (httpx.HTTPError, json.JSONDecodeError, ValidationError, KeyError) as e:
+            for obj in _objects(content):
+                try:
+                    parsed = model.model_validate(_clean_keys(obj))
+                except ValidationError:
+                    continue
+                await _log(session, user, kind, usage, ok=True)
+                return parsed
+            last_error = "невалидный json"
+            await _log(session, user, kind, usage, ok=False)
+        except (httpx.HTTPError, KeyError, ValueError) as e:
             last_error = type(e).__name__
             await _log(session, user, kind, usage, ok=False)
     log.warning("AI %s failed: %s", kind, last_error)
     raise HTTPException(status.HTTP_502_BAD_GATEWAY, "ИИ не ответил, попробуйте ещё раз")
 
 
-def _strip_fences(text: str) -> str:
-    t = text.strip()
-    if t.startswith("```"):
-        t = t.split("\n", 1)[1] if "\n" in t else t
-        t = t.rsplit("```", 1)[0]
-    return t
+def _clean_keys(node: Any) -> Any:
+    if isinstance(node, dict):
+        return {str(k).strip(): _clean_keys(v) for k, v in node.items()}
+    if isinstance(node, list):
+        return [_clean_keys(x) for x in node]
+    return node
 
+
+JSON_RULE = (
+    "Ответ - только один JSON-объект такой формы "
+    "(значения замени своими, a|b - выбери одно), без пояснений и без ```:"
+)
 
 _CATS = ", ".join(f"{c['slug']} ({c['title']})" for c in CATEGORIES)
 
@@ -277,7 +354,9 @@ async def improve_step(
         "Верни новый заголовок, текст (Markdown), чек-лист и короткую заметку note "
         "(1 предложение: что изменил)."
     )
-    return await structured(session, user, "improve", SYSTEM_EDITOR, prompt, AiImproveOut)
+    out = await structured(session, user, "improve", SYSTEM_EDITOR, prompt, AiImproveOut)
+    out.title = re.sub(r"^шаг\s*\d+[.:)]?\s*", "", out.title, flags=re.I)
+    return out
 
 
 async def review_guide(
@@ -377,27 +456,62 @@ async def stuck_hint(
     return out.hint
 
 
-async def embed(texts: list[str]) -> list[list[float]] | None:
+_encoder: Any = None
+_encoder_lock = threading.Lock()
+
+
+def _encode(texts: list[str], prompt: str) -> list[list[float]]:
+    # без sentence-transformers: он тянет scipy с numpy 2, а прод на старом проце без sse4
+    global _encoder
+    with _encoder_lock:
+        os.environ.setdefault("TRANSFORMERS_VERBOSITY", "error")
+        import torch
+        from transformers import AutoModel, AutoTokenizer
+
+        if _encoder is None:
+            name = get_settings().embedding_model
+            model = AutoModel.from_pretrained(name, dtype=torch.float32).eval()
+            _encoder = (AutoTokenizer.from_pretrained(name), model)
+        tokenizer, model = _encoder
+        out: list[list[float]] = []
+        with torch.inference_mode():
+            for i in range(0, len(texts), 8):
+                batch = tokenizer(
+                    [prompt + t for t in texts[i : i + 8]],
+                    padding=True,
+                    truncation=True,
+                    max_length=512,
+                    return_tensors="pt",
+                )
+                cls = model(**batch).last_hidden_state[:, 0]
+                out += torch.nn.functional.normalize(cls, dim=-1).tolist()
+    return out
+
+
+async def embed(texts: list[str], query: bool = False) -> list[list[float]] | None:
     s = get_settings()
     if not texts:
         return []
     if s.ai_fake:
         return [_fake_vector(t) for t in texts]
-    if not s.openrouter_api_key:
+    if not s.embeddings_enabled:
         return None
+    # rosberta хочет префиксы, без них поиск заметно тупее
+    prompt = "search_query: " if query else "search_document: "
     try:
-        r = await client().post(
-            "/embeddings", json={"model": s.embedding_model, "input": texts}, timeout=15.0
-        )
-        data = r.json()
-        rows = sorted(data["data"], key=lambda d: d["index"])
-        vectors = [row["embedding"] for row in rows]
-        if any(len(v) != s.embedding_dim for v in vectors):
-            return None
-        return vectors
-    except (httpx.HTTPError, KeyError, ValueError, TypeError) as e:
+        vectors = await asyncio.to_thread(_encode, texts, prompt)
+    except Exception as e:
         log.warning("embeddings failed: %s", e)
         return None
+    if any(len(v) != s.embedding_dim for v in vectors):
+        return None
+    return vectors
+
+
+def warm_up() -> None:
+    s = get_settings()
+    if s.embeddings_enabled and not s.ai_fake:
+        _encode(["прогрев"], "search_query: ")
 
 
 _query_cache: dict[str, list[float]] = {}
@@ -407,7 +521,7 @@ async def embed_query(q: str) -> list[float] | None:
     key = q.strip().lower()
     if key in _query_cache:
         return _query_cache[key]
-    vectors = await embed([key])
+    vectors = await embed([key], query=True)
     if not vectors:
         return None
     if len(_query_cache) > 500:

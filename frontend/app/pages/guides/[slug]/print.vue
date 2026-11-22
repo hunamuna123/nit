@@ -42,7 +42,7 @@ function print() {
       <header class="head">
         <div class="min-w-0">
           <BrandMark size="sm" />
-          <div class="meta mono mt-6">
+          <div class="meta tabular-nums mt-6">
             {{ categoryTitle(categories, guide.category) }} · v{{ guide.version.number }}
             <template v-if="guide.verified">
               · проверено экспертом
@@ -54,7 +54,7 @@ function print() {
           <p class="summary">
             {{ guide.summary }}
           </p>
-          <div class="facts mono">
+          <div class="facts tabular-nums">
             <span>{{ pl(guide.steps_count, 'шаг', 'шага', 'шагов') }}</span>
             <span>≈ {{ formatMinutes(guide.est_minutes) }}</span>
             <span>сложность: {{ DIFFICULTY[guide.difficulty]?.toLowerCase() }}</span>
@@ -73,11 +73,11 @@ function print() {
       <ol class="steps">
         <li v-for="(s, i) in guide.steps" :key="s.key" class="step">
           <div class="step__head">
-            <span class="step__num">{{ String(i + 1).padStart(2, '0') }}</span>
+            <span class="step__num">{{ i + 1 }}</span>
             <h2 class="step__title">
               {{ s.title }}
             </h2>
-            <span class="step__time mono">≈ {{ formatMinutes(s.minutes) }}</span>
+            <span class="step__time tabular-nums">≈ {{ formatMinutes(s.minutes) }}</span>
           </div>
           <MarkdownView :source="s.body" class="step__body" />
           <ul v-if="s.checklist.length" class="checklist">
@@ -88,7 +88,7 @@ function print() {
         </li>
       </ol>
 
-      <footer class="foot mono">
+      <footer class="foot tabular-nums">
         <span>Нить · {{ url }}</span>
         <span>{{ printedAt }}</span>
       </footer>
@@ -109,9 +109,10 @@ function print() {
   --wash-2: #eceef1;
   --ice: #1f5fae;
   --ice-wash: #eef4fb;
-  --silver: linear-gradient(180deg, #111214 0%, #2c2f36 100%);
-  --pearl: radial-gradient(circle at 34% 30%, #fff 0%, #c9ccd2 30%, #6f737b 75%, #3f4249 100%);
-  --pearl-glow: none;
+  --primary: #2f54eb;
+  --primary-foreground: #fff;
+  --subtle: #f7f7f8;
+  --card: #fff;
   min-height: 100dvh;
   background: #fff;
   color: #111214;
@@ -244,8 +245,7 @@ function print() {
 }
 
 .step__num {
-  font-family: var(--font-display);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   color: #9a9ea6;
   flex: none;

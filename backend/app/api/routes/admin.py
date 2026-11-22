@@ -26,9 +26,9 @@ async def _admin_user(session: SessionDep, u: User) -> AdminUser:
 @router.get("/stats")
 async def admin_stats(session: SessionDep, _: AdminDep) -> AdminStats:
     day = utcnow() - timedelta(days=1)
-    calls, cost_day = (
+    calls, tokens_day = (
         await session.execute(
-            select(func.count(), func.coalesce(func.sum(AiCall.cost_usd), 0.0)).where(
+            select(func.count(), func.coalesce(func.sum(AiCall.tokens), 0)).where(
                 AiCall.created_at > day
             )
         )
@@ -39,10 +39,9 @@ async def admin_stats(session: SessionDep, _: AdminDep) -> AdminStats:
         runs=await session.scalar(select(func.count()).select_from(Run)) or 0,
         events=await session.scalar(select(func.count()).select_from(StepEvent)) or 0,
         ai_calls_24h=calls,
-        ai_cost_24h=round(float(cost_day), 4),
-        ai_cost_total=round(
-            float(await session.scalar(select(func.coalesce(func.sum(AiCall.cost_usd), 0.0))) or 0),
-            4,
+        ai_tokens_24h=int(tokens_day),
+        ai_tokens_total=int(
+            await session.scalar(select(func.coalesce(func.sum(AiCall.tokens), 0))) or 0
         ),
         pending_expert_requests=await session.scalar(
             select(func.count()).where(User.expert_request_status == "pending")

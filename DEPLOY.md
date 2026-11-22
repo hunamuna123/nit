@@ -1,22 +1,15 @@
 # Как развернуть «Нить»
 
-Два варианта: локально (за 5 минут, для проверки и демо) и на сервере (VPS с доменом).
-
-## Что нужно
-
-- Docker с compose v2
-- Node 22 или 24 + pnpm (`corepack enable`)
-- Python 3.12 + [uv](https://docs.astral.sh/uv/)
-- make, git
-
-Порты: фронт 3000, бэк 8000, Postgres 5434, S3 9010. Postgres специально не на 5432, чтобы не конфликтовать с локальным.
+Два варианта: локально (для разработки и демо) и на сервере в Docker.
 
 ## Локально
 
+Нужны Docker с compose v2, Node 22/24 + pnpm (`corepack enable`), Python 3.12 + [uv](https://docs.astral.sh/uv/), make.
+
 ```bash
 git clone <url-репозитория> nit && cd nit
-cp backend/.env.example backend/.env   # можно пропустить, дефолты рабочие
-make setup                             # зависимости, docker compose, миграции, демо данные
+cp backend/.env.example backend/.env   # впиши GIGACHAT_AUTH_KEY
+make setup                             # зависимости, postgres + s3 в докере, миграции, демо данные
 make dev                               # фронт :3000 + бэк :8000
 ```
 
@@ -24,160 +17,95 @@ make dev                               # фронт :3000 + бэк :8000
 - swagger: http://localhost:8000/api/docs
 - вход: `demo@nit.demo` / `demo1234` (ещё `igor.vlasov@nit.demo` эксперт и `admin@nit.demo` админ, пароль тот же)
 
-ИИ: впиши `OPENROUTER_API_KEY` в `backend/.env`. Без ключа всё работает, кроме ИИ кнопок. `AI_FAKE=true` включает заглушку без сети.
+ИИ:
+- **GigaChat** (черновики, улучшение шагов, проверка, разбор узких мест, подсказки). Ключ авторизации берётся в личном кабинете GigaChat API на developers.sber.ru, кладётся в `GIGACHAT_AUTH_KEY`. Без ключа всё работает, кроме ИИ кнопок. `AI_FAKE=true` включает заглушку без сети.
+- **Эмбеддинги** для умного поиска считает открытая модель Сбера `ai-forever/ru-en-RoSBERTa` прямо в бэке. При первом запуске она качается с HuggingFace (~1.5 ГБ) в `~/.cache/huggingface`. Выключить: `EMBEDDINGS_ENABLED=false`, тогда поиск работает без семантики.
 
-Остановить инфраструктуру: `make down` (данные остаются в docker volumes).
+Порты: Postgres 5434, S3 9010 (не 5432, чтобы не конфликтовать с локальным постгресом).
 
-## На сервере
+## На сервере (Docker)
 
-Схема на одной машине: наружу торчит только nginx, он ходит в Nuxt (:3000), а Nuxt сам проксирует `/api/*` в FastAPI (:8000) и `/media/*` в S3 (:9010). Postgres и S3 слушают только 127.0.0.1.
+Всё поднимается одним compose-файлом `docker-compose.prod.yml`: postgres, s3 (SeaweedFS), api (FastAPI), web (Nuxt) и caddy. Наружу открыт только caddy на 80/443: он сам получает сертификат Let's Encrypt для домена и отдаёт сайт по https. Web проксирует `/api/*` в api и `/media/*` в s3.
 
 ```
-nginx :443 ──► Nuxt :3000 ──/api/**──► FastAPI :8000 ──► Postgres :5434
-                          └─/media/**─► S3 (SeaweedFS) :9010
+:443 caddy ──► web (Nuxt) ──/api/**──► api (FastAPI) ──► db (Postgres + pgvector)
+                          └─/media/**─► s3 (SeaweedFS)        └──► GigaChat API
 ```
 
-### 1. Код и зависимости
+Нужен только Docker с compose v2 и ~6 ГБ места (образ api с torch ~2 ГБ + модель).
+
+### 1. Код и секреты
 
 ```bash
-git clone <url-репозитория> /opt/nit && cd /opt/nit
-make install
+git clone <url-репозитория> ~/nit && cd ~/nit
+cp .env.prod.example .env.prod
+chmod 600 .env.prod
 ```
 
-### 2. Postgres и S3
+Заполни `.env.prod`:
 
-```bash
-make up      # docker compose up -d --wait
-```
-
-Логины в `docker-compose.yml` (`nit` / `nit`) и ключи S3 в `backend/docker/seaweedfs/s3.json` дефолтные. Наружу они не открыты, но для прода лучше поменять и прописать те же значения в `backend/.env`.
-
-### 3. backend/.env
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-Что поменять:
-
-| Переменная | Значение |
+| Переменная | Что это |
 |---|---|
-| `DEBUG` | `false` |
-| `JWT_SECRET` | случайная строка: `openssl rand -hex 32` |
-| `COOKIE_SECURE` | `true` (если сайт на https) |
-| `CORS_ORIGINS` | `["https://твой-домен"]` |
-| `DATABASE_URL` | если менял пароль Postgres |
-| `S3_ACCESS_KEY` / `S3_SECRET_KEY` | если менял ключи S3 |
-| `OPENROUTER_API_KEY` | ключ OpenRouter, иначе ИИ выключен |
+| `POSTGRES_PASSWORD` | пароль базы, любой: `openssl rand -hex 16` |
+| `JWT_SECRET` | секрет сессий: `openssl rand -hex 32` |
+| `GIGACHAT_AUTH_KEY` | ключ авторизации GigaChat API |
+| `AI_MODEL` | `GigaChat-2-Max` (или `GigaChat-2-Pro`, `GigaChat-2`) |
+| `SITE_DOMAIN` | домен сайта, например `nit.envision.press` |
+| `CORS_ORIGINS` | `["https://домен"]` |
+| `COOKIE_SECURE` | `true` (сайт по https) |
 
-### 4. Миграции и данные
+Перед запуском A-запись домена должна смотреть на сервер, а порты 80 и 443 быть свободны: по ним Caddy получает сертификат. Если домен за прокси Cloudflare (оранжевое облако), поставь там режим SSL «Full».
 
-```bash
-make migrate
-make seed     # только если нужны демо данные
-```
-
-Внимание: `make seed` запускается с `--reset` и **сносит все данные в базе**. На живой базе не запускать.
-
-### 5. Сборка фронта
+### 2. Запуск
 
 ```bash
-make build    # результат в frontend/.output
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-Адреса прокси (`NUXT_API_PROXY_TARGET`, `NUXT_MEDIA_PROXY_TARGET`) вшиваются в сборку, их надо задавать при `make build`, а не при запуске. Дефолты `http://localhost:8000` и `http://localhost:9010/nit-media` подходят, если всё на одной машине.
+Первая сборка идёт 5-10 минут. Миграции api накатывает сам при старте. Модель эмбеддингов качается при первом старте api в volume `models` (пара минут), пока она грузится, поиск работает без семантики.
 
-### 6. systemd
-
-`/etc/systemd/system/nit-api.service`:
-
-```ini
-[Unit]
-Description=nit api
-After=network.target docker.service
-
-[Service]
-WorkingDirectory=/opt/nit/backend
-ExecStart=/usr/local/bin/uv run fastapi run --host 127.0.0.1 --port 8000
-Restart=always
-User=nit
-
-[Install]
-WantedBy=multi-user.target
-```
-
-`WorkingDirectory` важен: `.env` читается из текущей папки.
-
-`/etc/systemd/system/nit-web.service`:
-
-```ini
-[Unit]
-Description=nit web
-After=network.target nit-api.service
-
-[Service]
-WorkingDirectory=/opt/nit/frontend
-Environment=PORT=3000
-Environment=HOST=127.0.0.1
-ExecStart=/usr/bin/node .output/server/index.mjs
-Restart=always
-User=nit
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Пути к `uv` и `node` проверь через `which uv` / `which node`.
+### 3. Демо данные (по желанию)
 
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now nit-api nit-web
+docker compose -f docker-compose.prod.yml --env-file .env.prod exec api python -m app.seed.run --reset
 ```
 
-### 7. nginx + https
+Внимание: `--reset` **сносит все данные в базе**. На живой базе не запускать.
 
-```nginx
-server {
-    server_name твой-домен;
-    client_max_body_size 10m;   # картинки шагов до 8 МБ
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
+### 4. Проверка
 
 ```bash
-sudo certbot --nginx -d твой-домен
+curl -s https://домен/api/health            # {"status":"ok"}
+curl -s https://домен/api/ai/status         # {"enabled":true,"model":"GigaChat-2-Max",...}
 ```
 
-### 8. Проверка
+Сайт: `https://домен/`, swagger: `https://домен/api/docs`. Запросы на http и на голый IP редиректятся на домен.
+
+Контейнерам выставлены лимиты (api — 2 CPU и 3 ГБ, torch в 2 потока; web — 1 CPU), чтобы стек не забивал хост.
+
+### Обновление
 
 ```bash
-curl -s http://127.0.0.1:8000/api/health        # {"status":"ok"}
-curl -s https://твой-домен/api/health           # то же самое через nuxt
+cd ~/nit && git pull
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
-Офлайн режим (PWA) работает только в прод сборке и только по https.
+Данные (база, картинки, модель) лежат в docker volumes `nit-prod_db-data`, `nit-prod_s3-data`, `nit-prod_models` и переживают пересборку. `down -v` их сотрёт.
 
-## Обновление
+### Логи и остановка
 
 ```bash
-cd /opt/nit && git pull
-make install
-make migrate
-make build
-sudo systemctl restart nit-api nit-web
+docker compose -f docker-compose.prod.yml --env-file .env.prod logs -f api
+docker compose -f docker-compose.prod.yml --env-file .env.prod down
 ```
 
 ## Если что-то не так
 
-- **Бэк не стартует, ругается на базу** - не поднят docker: `make up`, проверить `docker compose ps`.
-- **Картинки шагов не грузятся** - не жив S3 на :9010. API при этом стартует, но загрузка падает.
-- **Вход не держится** - сайт открыт по http, а стоит `COOKIE_SECURE=true`: браузер такую куку не сохранит.
+- **ИИ отвечает 503** - не задан `GIGACHAT_AUTH_KEY`. **502** - GigaChat не ответил или вернул кривой JSON, кнопку можно нажать ещё раз.
+- **Эмбеддинги GigaChat** (`Embeddings`, `EmbeddingsGigaR`) на бесплатном ключе отдают 402, поэтому семантика на локальной RoSBERTa.
+- **api падает с `Illegal instruction`** - старый процессор без SSE4.2 (например, AMD Phenom II). numpy поэтому закреплён на 1.26 (`numpy<2`), а эмбеддинги считаются через transformers напрямую, без sentence-transformers (он тянет scipy под numpy 2). Не обновляй numpy до 2.x, если прод на таком железе.
+- **Сервер слабый по памяти** - модель эмбеддингов занимает ~1.6 ГБ RAM. Если не влезает, ставь `EMBEDDINGS_ENABLED=false`.
+- **Сертификат Сбера** - GigaChat подписан корневым сертификатом Минцифры, он лежит в `backend/app/certs/` и подключается в коде, ставить его в систему не нужно.
+- **Вход не держится** - сайт открыт по http, а стоит `COOKIE_SECURE=true`.
 - **`make test` падает** - тестам нужна база `nit_test`, её создаёт init скрипт compose при первом запуске. Если volume старый: `docker compose down -v && make up` (сотрёт данные).
-- **Стили не применились после правки в dev** - `touch frontend/app/assets/css/main.css`.
+- **Офлайн режим (PWA)** работает только по https или на localhost.

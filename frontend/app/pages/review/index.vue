@@ -16,7 +16,7 @@ const { data: queue, status } = useFetch<ReviewQueueItem[]>('/api/review/queue',
 })
 
 const REASON: Record<string, { label: string, cls: string, hint: string }> = {
-  new: { label: 'новая', cls: 'tag--ice', hint: 'Ещё не проверялась' },
+  new: { label: 'новая', cls: 'tag--info', hint: 'Ещё не проверялась' },
   updated: { label: 'обновлена', cls: 'tag--warn', hint: 'Автор выпустил новую версию после проверки' },
   changes_requested: { label: 'ждёт правок', cls: 'tag--crit', hint: 'Вы просили доработать — версия та же' },
 }
@@ -63,75 +63,71 @@ async function submit(verdict: 'approved' | 'changes') {
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-5 pt-12">
-    <div v-if="!auth.isExpert" class="glass glass--lg mx-auto mt-10 max-w-xl p-10 text-center rise">
-      <span class="ico mx-auto size-14"><ShieldAlert class="size-6" /></span>
-      <h1 class="mt-5 text-[28px] font-extrabold silver">
+  <div class="mx-auto max-w-[1200px] px-5 pt-10">
+    <div v-if="!auth.isExpert" class="panel mx-auto mt-10 max-w-xl p-10 text-center">
+      <span class="icon-box mx-auto size-12"><ShieldAlert class="size-5" /></span>
+      <h1 class="mt-4 text-[22px] font-bold">
         Раздел для экспертов
       </h1>
       <p class="mt-3 text-[var(--text-3)]">
-        Эксперты проверяют инструкции в своих категориях. Подайте заявку в личном кабинете — администратор назначит роль.
+        Эксперты проверяют инструкции в своих категориях. Подайте заявку в личном кабинете, администратор назначит роль.
       </p>
-      <NuxtLink to="/me" class="btn-chrome mt-6">
+      <NuxtLink to="/me" class="btn-primary mt-6">
         Подать заявку
       </NuxtLink>
     </div>
 
     <template v-else>
       <div class="flex flex-wrap items-end justify-between gap-6">
-        <div class="scrim">
-          <SectionLabel code>
-            экспертиза
-          </SectionLabel>
-          <h1 class="mt-4 text-[38px] md:text-[56px] font-extrabold leading-[1.02] tracking-[-0.035em] silver" style="--lh: 1.02em">
+        <div>
+          <h1 class="page-title">
             Очередь проверки
           </h1>
-          <p class="mt-3 max-w-[620px] text-[var(--text-3)]">
-            Проверенные инструкции получают бейдж «эксперт» и бонус в индексе полезности. Ваши категории:
+          <p class="mt-2 max-w-[620px] text-[var(--text-3)]">
+            Проверенные инструкции получают отметку и бонус в индексе полезности. Ваши категории:
             <b class="text-foreground">{{ auth.isAdmin ? 'все (админ)' : auth.user?.expert_categories.map(c => categoryTitle(categories, c)).join(', ') }}</b>.
           </p>
         </div>
-        <div class="glass glass--pill h-11 px-5 inline-flex items-center gap-2 text-sm">
+        <div class="tag !h-8 !px-3 !text-[13px]">
           <ClipboardCheck class="size-4" /> {{ pl(queue?.length ?? 0, 'инструкция ждёт', 'инструкции ждут', 'инструкций ждут') }}
         </div>
       </div>
 
-      <div v-if="status === 'pending'" class="mt-8 space-y-3">
-        <div v-for="i in 3" :key="i" class="skel h-[96px] !rounded-[22px]" />
+      <div v-if="status === 'pending'" class="mt-6 space-y-3">
+        <div v-for="i in 3" :key="i" class="skel h-[96px]" />
       </div>
 
-      <div v-else-if="queue?.length" class="mt-8 space-y-3">
-        <article v-for="(q, i) in queue" :key="q.guide.id" class="row glass rise" :style="{ '--i': i }">
-          <img :src="`/glass/${q.guide.cover}.webp`" alt="" class="size-16 object-contain shrink-0 hidden sm:block">
+      <div v-else-if="queue?.length" class="mt-6 space-y-3">
+        <article v-for="q in queue" :key="q.guide.id" class="row panel">
+          <GuideCover :cover="q.guide.cover" :category="q.guide.category" :size="40" class="hidden sm:inline-grid" />
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
               <span class="tag" :class="REASON[q.reason]?.cls" :title="REASON[q.reason]?.hint">{{ REASON[q.reason]?.label }}</span>
               <span class="tag"><CategoryIcon :slug="q.guide.category" class="size-3.5" />{{ categoryTitle(categories, q.guide.category) }}</span>
               <span class="tag">v{{ q.version_number }}</span>
             </div>
-            <NuxtLink :to="`/guides/${q.guide.slug}`" target="_blank" class="mt-2 block font-bold text-[17px] leading-snug hover:underline underline-offset-4">
+            <NuxtLink :to="`/guides/${q.guide.slug}`" target="_blank" class="mt-2 block font-semibold text-[16px] leading-snug hover:underline underline-offset-4">
               {{ q.guide.title }}
             </NuxtLink>
-            <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 mono text-[12px] text-[var(--text-4)]">
+            <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 tabular-nums text-[12px] text-[var(--text-4)]">
               <span>{{ q.guide.author.name }}</span>
               <span class="inline-flex items-center gap-1"><ListChecks class="size-3.5" />{{ q.guide.steps_count }} шагов</span>
               <span class="inline-flex items-center gap-1"><Users class="size-3.5" />{{ formatNumber(q.guide.runs_count) }} прохождений</span>
               <span>дошли {{ percent(q.guide.completion_rate) }}</span>
             </div>
           </div>
-          <button class="btn-chrome btn-chrome--sm shrink-0" @click="startReview(q)">
+          <button class="btn-primary btn-sm shrink-0" @click="startReview(q)">
             Проверить
           </button>
         </article>
       </div>
 
-      <div v-else class="glass glass--lg mt-8 p-10 text-center">
-        <img src="/glass/ring.webp" alt="" class="w-32 mx-auto opacity-80">
-        <h3 class="mt-4 text-2xl font-bold">
+      <div v-else class="panel mt-6 p-10 text-center">
+        <h3 class="text-lg font-semibold">
           Очередь пуста
         </h3>
         <p class="mt-2 text-[var(--text-3)]">
-          Все инструкции в ваших категориях проверены. Загляните позже — авторы выпускают новые версии.
+          Все инструкции в ваших категориях проверены.
         </p>
       </div>
     </template>
@@ -156,7 +152,7 @@ async function submit(verdict: 'approved' | 'changes') {
             </p>
             <div v-for="(s, i) in detail.steps" :key="s.key" class="p-5 rounded-[20px] bg-[var(--wash)] shadow-[inset_0_0_0_1px_var(--line)]">
               <div class="flex items-start gap-3">
-                <span class="display text-[20px] text-[var(--text-4)] w-9 shrink-0">{{ String(i + 1).padStart(2, '0') }}</span>
+                <span class="text-[15px] font-semibold tabular-nums text-[var(--text-4)] w-9 shrink-0">{{ i + 1 }}</span>
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-2">
                     <span class="font-semibold text-[16px]">{{ s.title }}</span>
@@ -179,10 +175,10 @@ async function submit(verdict: 'approved' | 'changes') {
         <div class="p-5 border-t border-[var(--line)] space-y-3">
           <textarea v-model="note" class="field !min-h-[72px] !text-[14px]" maxlength="1500" placeholder="Заметка автору: что проверили, что стоит уточнить (обязательно, если просите доработать)" />
           <div class="flex flex-wrap justify-end gap-2">
-            <button class="btn-glass btn-glass--sm" :disabled="submitting" @click="submit('changes')">
+            <button class="btn-secondary btn-sm" :disabled="submitting" @click="submit('changes')">
               Нужны правки
             </button>
-            <button class="btn-chrome btn-chrome--sm" :disabled="submitting || loadingDetail" @click="submit('approved')">
+            <button class="btn-primary btn-sm" :disabled="submitting || loadingDetail" @click="submit('approved')">
               <BadgeCheck class="size-4" /> Одобрить
             </button>
           </div>
@@ -196,8 +192,7 @@ async function submit(verdict: 'approved' | 'changes') {
 .row {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 16px 20px;
-  border-radius: 22px;
+  gap: 16px;
+  padding: 16px 18px;
 }
 </style>

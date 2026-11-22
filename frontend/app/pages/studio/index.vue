@@ -21,66 +21,63 @@ const totals = computed(() => {
 
 function statusTag(g: StudioGuideItem) {
   if (g.status === 'draft') return { cls: 'tag--warn', text: 'черновик' }
-  if (g.has_unpublished_changes) return { cls: 'tag--ice', text: 'есть неопубликованные правки' }
+  if (g.has_unpublished_changes) return { cls: 'tag--info', text: 'есть неопубликованные правки' }
   return { cls: 'tag--ok', text: 'опубликовано' }
 }
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-5 pt-12">
+  <div class="mx-auto max-w-[1200px] px-5 pt-10">
     <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="scrim">
-        <SectionLabel code>
-          студия автора
-        </SectionLabel>
-        <h1 class="mt-4 text-[40px] md:text-[60px] font-extrabold leading-[1.02] silver" style="--lh: 1.02em">
+      <div>
+        <h1 class="page-title">
           Ваши инструкции
         </h1>
-        <p class="mt-3 text-[var(--text-3)] max-w-[560px]">
-          Пишите, публикуйте версии и смотрите, на каком шаге ученики спотыкаются.
+        <p class="mt-2 text-[var(--text-3)] max-w-[560px]">
+          Пишите, публикуйте версии и смотрите, на каком шаге люди застревают.
         </p>
       </div>
-      <div class="flex flex-wrap gap-3">
-        <NuxtLink to="/studio/inbox" class="btn-glass">
+      <div class="flex flex-wrap gap-2">
+        <NuxtLink to="/studio/inbox" class="btn-secondary">
           <GitPullRequestArrow class="size-4" /> Правки
           <span v-if="totals.suggestions" class="badge">{{ totals.suggestions }}</span>
         </NuxtLink>
-        <NuxtLink to="/studio/new" class="btn-chrome">
+        <NuxtLink to="/studio/new" class="btn-primary">
           <Plus class="size-4" /> Новая инструкция
         </NuxtLink>
       </div>
     </div>
 
-    <div v-if="guides?.length" class="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="glass p-5 rise">
+    <div v-if="guides?.length" class="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="panel p-5">
         <div class="label">
-          прохождений
+          Прохождений
         </div>
-        <div class="mt-2 display silver text-[40px] leading-none">
+        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none">
           {{ formatNumber(totals.runs) }}
         </div>
       </div>
-      <div class="glass p-5 rise" style="--i: 1">
+      <div class="panel p-5">
         <div class="label">
-          доходят до конца
+          Доходят до конца
         </div>
-        <div class="mt-2 display silver text-[40px] leading-none">
+        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none">
           {{ percent(totals.rate) }}
         </div>
       </div>
-      <div class="glass p-5 rise" style="--i: 2">
+      <div class="panel p-5">
         <div class="label">
-          открытых правок
+          Открытых правок
         </div>
-        <div class="mt-2 display silver text-[40px] leading-none">
+        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none">
           {{ totals.suggestions }}
         </div>
       </div>
-      <div class="glass p-5 rise" :class="{ 'glass--lit': totals.hot > 0 }" style="--i: 3">
+      <div class="panel p-5">
         <div class="label">
-          критичных узких мест
+          Критичных узких мест
         </div>
-        <div class="mt-2 display text-[40px] leading-none" :class="totals.hot ? 'text-[var(--crit)]' : 'silver'">
+        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none" :class="totals.hot ? 'text-[var(--crit)]' : ''">
           {{ totals.hot }}
         </div>
       </div>
@@ -88,22 +85,22 @@ function statusTag(g: StudioGuideItem) {
 
     <div class="mt-8 space-y-3">
       <template v-if="status === 'pending'">
-        <div v-for="i in 3" :key="i" class="skel h-[132px] !rounded-[24px]" />
+        <div v-for="i in 3" :key="i" class="skel h-[132px]" />
       </template>
 
-      <article v-for="(g, i) in guides" :key="g.id" class="row glass rise" :style="{ '--i': i }">
-        <img :src="`/glass/${g.cover}.webp`" alt="" class="row__cover">
+      <article v-for="g in guides" :key="g.id" class="row panel">
+        <GuideCover :cover="g.cover" :category="g.category" :size="44" class="row__cover" />
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-center gap-2">
             <span class="tag" :class="statusTag(g).cls">{{ statusTag(g).text }}</span>
-            <span class="tag"><CategoryIcon :slug="g.category" class="size-3.5" />{{ g.steps_count || '—' }} шагов</span>
-            <span v-if="g.verified" class="tag tag--ok">эксперт ✓</span>
+            <span class="tag">{{ g.steps_count || '—' }} шагов</span>
+            <span v-if="g.verified" class="tag tag--ok">эксперт</span>
             <span v-if="g.forked_from" class="tag">форк «{{ g.forked_from.title }}»</span>
           </div>
-          <NuxtLink :to="`/studio/${g.id}`" class="block mt-2 text-[19px] font-bold leading-snug hover:underline underline-offset-4">
+          <NuxtLink :to="`/studio/${g.id}`" class="block mt-2 text-[16.5px] font-semibold leading-snug hover:underline underline-offset-4">
             {{ g.title || 'Без названия' }}
           </NuxtLink>
-          <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 mono text-[12.5px] text-[var(--text-3)]">
+          <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 tabular-nums text-[12.5px] text-[var(--text-3)]">
             <span>{{ pl(g.runs_count, 'прохождение', 'прохождения', 'прохождений') }}</span>
             <span>до конца {{ percent(g.completion_rate) }}</span>
             <span>★ {{ g.rating?.toFixed(1) ?? '—' }}</span>
@@ -118,32 +115,31 @@ function statusTag(g: StudioGuideItem) {
           >
             <AlertTriangle class="size-4 shrink-0" />
             <span class="truncate">Узкое место: «{{ g.hot_step.title }}»</span>
-            <span class="mono shrink-0">индекс {{ g.hot_step.score }}</span>
+            <span class="tabular-nums shrink-0">индекс {{ g.hot_step.score }}</span>
             <ArrowRight class="size-4 shrink-0" />
           </NuxtLink>
         </div>
         <div class="row__actions">
-          <NuxtLink :to="`/studio/${g.id}`" class="btn-glass btn-glass--sm">
+          <NuxtLink :to="`/studio/${g.id}`" class="btn-secondary btn-sm">
             <PenLine class="size-4" /> Редактор
           </NuxtLink>
-          <NuxtLink v-if="g.status === 'published'" :to="`/studio/${g.id}/analytics`" class="btn-glass btn-glass--sm">
+          <NuxtLink v-if="g.status === 'published'" :to="`/studio/${g.id}/analytics`" class="btn-secondary btn-sm">
             <ChartNoAxesColumn class="size-4" /> Аналитика
           </NuxtLink>
-          <NuxtLink v-if="g.status === 'published'" :to="`/guides/${g.slug}`" class="btn-glass btn-glass--sm" title="Открыть публичную страницу">
+          <NuxtLink v-if="g.status === 'published'" :to="`/guides/${g.slug}`" class="btn-secondary btn-sm" title="Открыть публичную страницу">
             <Eye class="size-4" />
           </NuxtLink>
         </div>
       </article>
 
-      <div v-if="status !== 'pending' && !guides?.length" class="glass glass--lg p-10 text-center">
-        <img src="/glass/blob.webp" alt="" class="w-40 mx-auto opacity-80">
-        <h3 class="mt-4 text-2xl font-bold">
+      <div v-if="status !== 'pending' && !guides?.length" class="panel p-10 text-center">
+        <h3 class="text-lg font-semibold">
           Здесь появятся ваши инструкции
         </h3>
         <p class="mt-2 text-[var(--text-3)] max-w-md mx-auto">
-          Знаете, как сделать что-то, на чём другие спотыкаются? Опишите задачу — ИИ набросает шаги, а вы доведёте их до ума.
+          Опишите задачу, и ИИ набросает шаги. Останется проверить их и опубликовать.
         </p>
-        <NuxtLink to="/studio/new" class="btn-chrome mt-6">
+        <NuxtLink to="/studio/new" class="btn-primary mt-6">
           <Sparkles class="size-4" /> Создать первую инструкцию
         </NuxtLink>
       </div>
@@ -155,18 +151,12 @@ function statusTag(g: StudioGuideItem) {
 .row {
   display: flex;
   align-items: center;
-  gap: 20px;
-  padding: 18px 20px;
-  border-radius: 24px;
-  overflow: hidden;
+  gap: 16px;
+  padding: 16px 18px;
 }
 
 .row__cover {
-  flex: none;
-  width: 84px;
-  height: 84px;
-  object-fit: contain;
-  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, .4));
+  align-self: flex-start;
 }
 
 .row__actions {
@@ -182,11 +172,6 @@ function statusTag(g: StudioGuideItem) {
     flex-wrap: wrap;
   }
 
-  .row__cover {
-    width: 56px;
-    height: 56px;
-  }
-
   .row__actions {
     width: 100%;
     justify-content: flex-start;
@@ -199,14 +184,14 @@ function statusTag(g: StudioGuideItem) {
   gap: 8px;
   max-width: 100%;
   margin-top: 12px;
-  padding: 7px 12px;
-  border-radius: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
   font-size: 13px;
-  transition: filter .2s;
 }
 
 .hot:hover {
-  filter: brightness(1.15);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .hot--crit {
@@ -226,10 +211,9 @@ function statusTag(g: StudioGuideItem) {
   height: 20px;
   padding: 0 6px;
   border-radius: 999px;
-  font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--on-chrome);
-  background: var(--chrome);
+  color: var(--primary-foreground);
+  background: var(--primary);
 }
 </style>

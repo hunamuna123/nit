@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, CornerDownLeft, Search, Sparkles } from '@lucide/vue'
+import { ArrowRight, CornerDownLeft, Search } from '@lucide/vue'
 import type { GuideList } from '~/types/api'
 
 const open = defineModel<boolean>('open', { default: false })
@@ -85,12 +85,12 @@ onMounted(() => {
       <DialogDescription class="sr-only">
         Ищет по смыслу, с учётом опечаток и форм слов
       </DialogDescription>
-      <div class="flex items-center gap-3 px-5 h-16 border-b border-[var(--line)]">
+      <div class="flex items-center gap-3 px-4 h-14 border-b border-[var(--line)]">
         <Search class="size-5 text-[var(--text-3)]" />
         <input
           v-model="q"
           autofocus
-          class="flex-1 bg-transparent outline-none text-[17px] placeholder:text-[var(--text-4)]"
+          class="flex-1 bg-transparent outline-none text-[16px] placeholder:text-[var(--text-4)]"
           placeholder="Что нужно сделать? Например: «собрать компьютер»"
           @keydown="onKey"
         >
@@ -101,7 +101,7 @@ onMounted(() => {
       <div class="max-h-[60vh] overflow-y-auto p-2">
         <div v-if="!q" class="p-4">
           <div class="label mb-3">
-            <Sparkles class="size-3.5" /> попробуйте спросить как человек
+            Можно спросить своими словами
           </div>
           <div class="flex flex-wrap gap-2">
             <button v-for="ex in examples" :key="ex" class="chip" @click="q = ex">
@@ -112,8 +112,8 @@ onMounted(() => {
 
         <template v-else-if="result">
           <div v-if="result.search_modes.length" class="flex items-center gap-2 px-3 pt-2 pb-3">
-            <span class="label">нашлось:</span>
-            <span v-for="m in result.search_modes" :key="m" class="tag tag--ice">{{ MODES[m] ?? m }}</span>
+            <span class="label">Нашлось:</span>
+            <span v-for="m in result.search_modes" :key="m" class="tag tag--info">{{ MODES[m] ?? m }}</span>
           </div>
           <button
             v-for="(g, i) in result.items"
@@ -123,7 +123,7 @@ onMounted(() => {
             @mouseenter="active = i"
             @click="go(g.slug)"
           >
-            <img :src="`/glass/${g.cover}.webp`" alt="" class="size-11 object-contain shrink-0">
+            <GuideCover :cover="g.cover" :category="g.category" :size="36" />
             <span class="min-w-0 flex-1 text-left">
               <span class="block font-semibold truncate">{{ g.title }}</span>
               <span class="block text-[13px] text-[var(--text-3)] truncate">
@@ -147,7 +147,7 @@ onMounted(() => {
             @mouseenter="active = result.items.length"
             @click="go()"
           >
-            <span class="ico size-11"><ArrowRight class="size-4" /></span>
+            <span class="icon-box"><ArrowRight class="size-4" /></span>
             <span class="flex-1 text-left font-medium">Все результаты ({{ result.total }})</span>
           </button>
         </template>
@@ -160,10 +160,10 @@ onMounted(() => {
 .result {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 16px;
+  padding: 8px 10px;
+  border-radius: 8px;
   transition: background .15s;
 }
 

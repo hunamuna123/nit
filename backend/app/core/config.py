@@ -20,11 +20,14 @@ class Settings(BaseSettings):
     session_days: int = 30
     cookie_secure: bool = False
 
-    openrouter_api_key: str = ""
-    openrouter_base_url: str = "https://openrouter.ai/api/v1"
-    ai_model: str = "deepseek/deepseek-v4.1-flash"
-    embedding_model: str = "baai/bge-m3"
+    gigachat_auth_key: str = ""
+    gigachat_scope: str = "GIGACHAT_API_PERS"
+    gigachat_oauth_url: str = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
+    gigachat_base_url: str = "https://gigachat.devices.sberbank.ru/api/v1"
+    ai_model: str = "GigaChat-2-Max"
+    embedding_model: str = "ai-forever/ru-en-RoSBERTa"
     embedding_dim: int = 1024
+    embeddings_enabled: bool = True
     ai_fake: bool = False
     ai_user_hourly_limit: int = 40
     ai_timeout_s: float = 60.0
@@ -43,7 +46,7 @@ class Settings(BaseSettings):
 
     @property
     def ai_enabled(self) -> bool:
-        return self.ai_fake or bool(self.openrouter_api_key)
+        return self.ai_fake or bool(self.gigachat_auth_key)
 
 
 @lru_cache

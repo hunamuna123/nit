@@ -17,12 +17,13 @@ const hue = computed(() => (props.id * 47) % 360)
   display: inline-grid;
   place-items: center;
   border-radius: 50%;
-  font-weight: 700;
-  letter-spacing: -.02em;
-  color: #0b0c0e;
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .95) 0%, rgba(255, 255, 255, .4) 28%, transparent 60%),
-    linear-gradient(140deg, hsl(var(--h) 60% 86%), hsl(calc(var(--h) + 40) 30% 62%));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 0 0 1px rgba(255, 255, 255, .12), 0 4px 12px rgba(0, 0, 0, .3);
+  font-weight: 600;
+  color: hsl(var(--h) 45% 32%);
+  background: hsl(var(--h) 60% 90%);
+}
+
+.dark .avatar {
+  color: hsl(var(--h) 60% 82%);
+  background: hsl(var(--h) 30% 24%);
 }
 </style>

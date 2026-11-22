@@ -41,12 +41,11 @@ const shown = computed(() => hover.value || props.value || 0)
 }
 
 .star--on {
-  color: var(--foreground);
+  color: #f59e0b;
 }
 
 .star--on :deep(svg) {
   fill: currentColor;
-  filter: drop-shadow(0 0 6px rgba(220, 230, 255, .35));
 }
 
 .star--btn:hover {

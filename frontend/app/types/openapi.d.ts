@@ -858,10 +858,10 @@ export interface components {
             events: number;
             /** Ai Calls 24H */
             ai_calls_24h: number;
-            /** Ai Cost 24H */
-            ai_cost_24h: number;
-            /** Ai Cost Total */
-            ai_cost_total: number;
+            /** Ai Tokens 24H */
+            ai_tokens_24h: number;
+            /** Ai Tokens Total */
+            ai_tokens_total: number;
             /** Pending Expert Requests */
             pending_expert_requests: number;
         };

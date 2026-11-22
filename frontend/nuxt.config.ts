@@ -45,11 +45,12 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'Нить — интерактивные пошаговые инструкции с чек-листами: проходите задачу шаг за шагом, а авторы видят, где ученики спотыкаются.',
         },
-        { name: 'theme-color', content: '#0a0a0b' },
+        { name: 'theme-color', content: '#ffffff' },
         { property: 'og:site_name', content: 'Нить' },
       ],
       link: [
         { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+        { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
@@ -64,8 +65,8 @@ export default defineNuxtConfig({
 
   colorMode: {
     classSuffix: '',
-    preference: 'dark',
-    fallback: 'dark',
+    preference: 'system',
+    fallback: 'light',
   },
 
   routeRules: {
@@ -88,8 +89,8 @@ export default defineNuxtConfig({
       short_name: 'Нить',
       description: 'Интерактивные пошаговые инструкции с чек-листами',
       lang: 'ru',
-      theme_color: '#0a0a0b',
-      background_color: '#0a0a0b',
+      theme_color: '#ffffff',
+      background_color: '#ffffff',
       display: 'standalone',
       start_url: '/',
       icons: [

@@ -110,14 +110,15 @@ const buttons = computed<Btn[]>(() => {
 
 <style scoped>
 .editor {
-  border-radius: 18px;
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1px var(--line-2);
-  transition: box-shadow .25s var(--ease);
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--input);
+  transition: border-color .15s, box-shadow .15s;
 }
 
 .editor:focus-within {
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), 0 0 0 4px rgba(157, 180, 255, .1);
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 18%, transparent);
 }
 
 .editor__bar {
@@ -125,16 +126,18 @@ const buttons = computed<Btn[]>(() => {
   flex-wrap: wrap;
   align-items: center;
   gap: 2px;
-  padding: 6px;
+  padding: 4px;
   border-bottom: 1px solid var(--line);
+  background: var(--subtle);
+  border-radius: 10px 10px 0 0;
 }
 
 .editor__btn {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   color: var(--text-3);
   transition: background .15s, color .15s;
 }
@@ -147,7 +150,6 @@ const buttons = computed<Btn[]>(() => {
 .editor__btn--on {
   color: var(--foreground);
   background: var(--wash-2);
-  box-shadow: inset 0 0 0 1px var(--line-2);
 }
 
 .editor__body :deep(.md-editor) {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-  BadgeCheck, Bookmark, ChevronDown, Clock, Code2, Download, FileDown, GitFork, ListChecks,
+  BadgeCheck, Bookmark, Check, ChevronDown, Clock, Code2, Download, FileDown, GitFork, ListChecks,
   MessageSquare, Play, RotateCcw, ThumbsDown, ThumbsUp, WifiOff,
 } from '@lucide/vue'
 import { toast } from 'vue-sonner'
@@ -100,7 +100,7 @@ async function postComment() {
 
 const embedOpen = ref(false)
 const origin = computed(() => (import.meta.client ? window.location.origin : ''))
-const embedCode = computed(() => `<iframe src="${origin.value}/embed/${slug.value}" width="100%" height="680" style="border:0;border-radius:24px" title="${g.value.title} — Нить" loading="lazy"></iframe>`)
+const embedCode = computed(() => `<iframe src="${origin.value}/embed/${slug.value}" width="100%" height="680" style="border:0;border-radius:12px" title="${g.value.title} — Нить" loading="lazy"></iframe>`)
 async function copyEmbed() {
   await navigator.clipboard.writeText(embedCode.value)
   toast.success('Код для вставки скопирован')
@@ -110,10 +110,10 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
 </script>
 
 <template>
-  <div v-if="guide" class="mx-auto max-w-[1180px] px-5 pt-10">
+  <div v-if="guide" class="mx-auto max-w-[1200px] px-5 pt-8">
     <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div class="min-w-0">
-        <div class="flex flex-wrap items-center gap-2 rise">
+        <div class="flex flex-wrap items-center gap-2">
           <NuxtLink :to="{ path: '/guides', query: { category: g.category } }" class="tag hover:text-foreground">
             <CategoryIcon :slug="g.category" class="size-3.5" />{{ categoryTitle(categories, g.category) }}
           </NuxtLink>
@@ -124,51 +124,51 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
           </NuxtLink>
         </div>
 
-        <h1 class="mt-5 text-[36px] md:text-[54px] font-extrabold leading-[1.04] tracking-[-0.035em] silver halo rise" style="--lh: 1.04em; --i: 1">
+        <h1 class="mt-4 page-title">
           {{ g.title }}
         </h1>
-        <p class="mt-4 text-[17px] leading-relaxed text-[var(--text-2)] max-w-[680px] halo rise" style="--i: 2">
+        <p class="mt-3 text-[16px] leading-relaxed text-[var(--text-3)] max-w-[680px]">
           {{ g.summary }}
         </p>
 
-        <div class="mt-6 flex flex-wrap gap-x-6 gap-y-2 mono text-[13px] text-[var(--text-3)] rise" style="--i: 3">
+        <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 tabular-nums text-[13px] text-[var(--text-3)]">
           <span class="inline-flex items-center gap-1.5"><ListChecks class="size-4" />{{ pl(g.steps_count, 'шаг', 'шага', 'шагов') }}</span>
           <span class="inline-flex items-center gap-1.5"><Clock class="size-4" />{{ formatMinutes(g.est_minutes) }}</span>
           <span>сложность: {{ DIFFICULTY[g.difficulty]?.toLowerCase() }}</span>
           <span v-for="t in g.tags" :key="t">#{{ t }}</span>
         </div>
 
-        <div class="mt-8 glass glass--lg p-5 md:p-6 rise" style="--i: 4">
+        <div class="mt-7 panel p-5">
           <template v-if="run && run.status !== 'completed'">
             <div class="flex items-center justify-between text-sm mb-3">
-              <span class="label">ваш прогресс</span>
-              <span class="mono text-[var(--text-3)]">{{ percent(run.progress) }}</span>
+              <span class="label">Ваш прогресс</span>
+              <span class="tabular-nums text-[var(--text-3)]">{{ percent(run.progress) }}</span>
             </div>
             <HairlineBar :value="run.progress" />
-            <div class="mt-5 flex flex-wrap gap-3">
-              <button class="btn-chrome" @click="start()">
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button class="btn-primary" @click="start()">
                 <Play class="size-4" /> Продолжить с шага {{ runStep }}
               </button>
-              <button class="btn-glass" @click="start(true)">
+              <button class="btn-secondary" @click="start(true)">
                 <RotateCcw class="size-4" /> Заново
               </button>
             </div>
             <p v-if="run.outdated" class="mt-3 text-[13px] text-[var(--warn)]">
-              Вы проходите v{{ run.version_number }}, а автор уже обновил инструкцию до v{{ g.version.number }} — можно начать заново по новой версии.
+              Вы проходите v{{ run.version_number }}, а автор обновил инструкцию до v{{ g.version.number }}. Можно начать заново по новой версии.
             </p>
           </template>
           <template v-else-if="run && run.status === 'completed'">
             <div class="flex flex-wrap items-center gap-4 justify-between">
               <div>
-                <div class="font-bold text-lg">
-                  Вы прошли эту инструкцию 🎉
+                <div class="font-semibold text-[16px]">
+                  Вы прошли эту инструкцию
                 </div>
                 <div class="text-sm text-[var(--text-3)] mt-1 flex items-center gap-2">
                   {{ g.my_rating ? 'Ваша оценка:' : 'Оцените, насколько помогло:' }}
                   <RatingStars :value="g.my_rating ?? 0" interactive :size="18" @select="rate" />
                 </div>
               </div>
-              <button class="btn-glass" @click="start(true)">
+              <button class="btn-secondary" @click="start(true)">
                 <RotateCcw class="size-4" /> Пройти ещё раз
               </button>
             </div>
@@ -176,20 +176,20 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
           <template v-else>
             <div class="flex flex-wrap items-center gap-4 justify-between">
               <div>
-                <div class="font-bold text-lg">
-                  Готовы? Это займёт около {{ formatMinutes(g.est_minutes) }}
+                <div class="font-semibold text-[16px]">
+                  Займёт около {{ formatMinutes(g.est_minutes) }}
                 </div>
                 <div class="text-sm text-[var(--text-3)] mt-1">
-                  Можно без регистрации — прогресс сохранится на этом устройстве.
+                  Можно без регистрации, прогресс сохранится на этом устройстве.
                 </div>
               </div>
-              <button class="btn-chrome" @click="start()">
-                <Play class="size-4" /> Начать прохождение
+              <button class="btn-primary" @click="start()">
+                <Play class="size-4" /> Начать
               </button>
             </div>
           </template>
 
-          <div class="mt-5 pt-4 border-t border-[var(--line)] flex flex-wrap gap-2">
+          <div class="mt-4 pt-4 border-t border-[var(--line)] flex flex-wrap gap-2">
             <button class="chip" :class="g.bookmarked && 'chip--on'" @click="toggleBookmark">
               <Bookmark class="size-4" :class="g.bookmarked && 'fill-current'" /> {{ g.bookmarked ? 'Сохранено' : 'Сохранить' }}
             </button>
@@ -210,18 +210,26 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
 
         <section class="mt-12">
           <div class="flex items-end justify-between">
-            <SectionLabel num="01">
-              маршрут
-            </SectionLabel>
+            <h2 class="section-title">
+              Шаги
+            </h2>
             <span class="label">{{ pl(comments?.length ?? 0, 'комментарий', 'комментария', 'комментариев') }}</span>
           </div>
-          <ol class="mt-5 space-y-2.5">
-            <li v-for="(s, i) in g.steps" :key="s.key" class="step glass rise" :style="{ '--i': Math.min(i, 8) }">
+          <ol class="mt-4 timeline">
+            <li
+              v-for="(s, i) in g.steps"
+              :key="s.key"
+              class="tl"
+              :class="{ 'tl--passed': run && (run.status === 'completed' || i < run.current_step), 'tl--open': open === s.key }"
+            >
               <button class="step__head" :aria-expanded="open === s.key" @click="open = open === s.key ? null : s.key">
-                <span class="step__num display">{{ String(i + 1).padStart(2, '0') }}</span>
+                <span class="step__num tabular-nums">
+                  <Check v-if="run && (run.status === 'completed' || i < run.current_step)" class="size-3.5" />
+                  <template v-else>{{ i + 1 }}</template>
+                </span>
                 <span class="flex-1 min-w-0 text-left">
-                  <span class="block font-semibold text-[16px] leading-snug">{{ s.title }}</span>
-                  <span class="mt-1 flex flex-wrap gap-x-4 gap-y-1 mono text-[12px] text-[var(--text-4)]">
+                  <span class="block font-medium text-[15.5px] leading-snug">{{ s.title }}</span>
+                  <span class="mt-1 flex flex-wrap gap-x-4 gap-y-1 tabular-nums text-[12px] text-[var(--text-4)]">
                     <span>{{ formatMinutes(s.minutes) }}</span>
                     <span v-if="s.checklist.length">{{ pl(s.checklist.length, 'пункт', 'пункта', 'пунктов') }} чек-листа</span>
                     <span v-if="g.step_stats[s.key]?.up" class="inline-flex items-center gap-1"><ThumbsUp class="size-3" />{{ g.step_stats[s.key]!.up }}</span>
@@ -229,13 +237,13 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
                     <span v-if="commentsByStep[s.key]?.length" class="inline-flex items-center gap-1"><MessageSquare class="size-3" />{{ commentsByStep[s.key]!.length }}</span>
                   </span>
                 </span>
-                <ChevronDown class="size-5 text-[var(--text-3)] transition-transform" :class="open === s.key && 'rotate-180'" />
+                <ChevronDown class="size-[18px] text-[var(--text-4)] transition-transform" :class="open === s.key && 'rotate-180'" />
               </button>
-              <div v-if="open === s.key" class="px-5 pb-5 md:pl-[76px]">
+              <div v-if="open === s.key" class="pb-6 pl-[54px] pr-2 md:pr-4">
                 <MarkdownView :source="s.body" />
                 <ul v-if="s.checklist.length" class="mt-4 space-y-2">
                   <li v-for="c in s.checklist" :key="c.key" class="flex items-start gap-2.5 text-[14.5px]">
-                    <span class="mt-0.5 size-[18px] rounded-md shrink-0 shadow-[inset_0_0_0_1.5px_var(--line-2)]" />{{ c.text }}
+                    <span class="mt-0.5 size-[18px] rounded-[5px] shrink-0 border-[1.5px] border-[var(--line-2)]" />{{ c.text }}
                   </li>
                 </ul>
                 <div v-if="commentsByStep[s.key]?.length" class="mt-5 space-y-2">
@@ -245,8 +253,8 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
                       <div class="flex flex-wrap items-center gap-2 text-[12.5px]">
                         <span class="font-semibold">{{ c.user.name }}</span>
                         <span v-if="c.user.role === 'expert'" class="tag tag--ok !h-5">эксперт</span>
-                        <span v-if="c.is_author" class="tag tag--lit !h-5">автор</span>
-                        <span class="tag !h-5" :class="c.kind === 'tip' && 'tag--ice'">{{ KIND[c.kind] }}</span>
+                        <span v-if="c.is_author" class="tag tag--strong !h-5">автор</span>
+                        <span class="tag !h-5" :class="c.kind === 'tip' && 'tag--info'">{{ KIND[c.kind] }}</span>
                         <span class="text-[var(--text-4)]">{{ timeAgo(c.created_at) }}</span>
                       </div>
                       <p class="mt-1 text-[14px] text-[var(--text-2)] whitespace-pre-line">
@@ -261,14 +269,14 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
         </section>
 
         <section class="mt-12">
-          <SectionLabel num="02">
-            обсуждение
-          </SectionLabel>
-          <div class="mt-5 glass p-5">
+          <h2 class="section-title">
+            Обсуждение
+          </h2>
+          <div class="mt-4 panel p-4">
             <form v-if="auth.user" class="flex gap-3 items-start" @submit.prevent="postComment">
-              <UserAvatar :id="auth.user.id" :name="auth.user.name" :size="34" />
-              <textarea v-model="newComment" class="field !min-h-[52px] !h-[52px] focus:!h-24 transition-[height]" placeholder="Поделитесь опытом или задайте вопрос по инструкции" />
-              <button class="btn-chrome btn-chrome--sm mt-1.5" :disabled="posting || !newComment.trim()">
+              <UserAvatar :id="auth.user.id" :name="auth.user.name" :size="32" />
+              <textarea v-model="newComment" class="field !min-h-[44px] !h-[44px] focus:!h-24 transition-[height]" placeholder="Поделитесь опытом или задайте вопрос" />
+              <button class="btn-primary btn-sm mt-1" :disabled="posting || !newComment.trim()">
                 Отправить
               </button>
             </form>
@@ -292,41 +300,40 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
         </section>
 
         <section v-if="forks?.length" class="mt-12">
-          <SectionLabel num="03">
-            улучшенные версии
-          </SectionLabel>
-          <p class="mt-3 text-[var(--text-3)] text-sm">
-            Форки — версии этой инструкции от других авторов. Сравните, какая проходится легче.
+          <h2 class="section-title">
+            Улучшенные версии
+          </h2>
+          <p class="mt-1 text-[var(--text-3)] text-sm">
+            Версии этой инструкции от других авторов.
           </p>
-          <div class="mt-5 grid gap-4 sm:grid-cols-2">
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
             <GuideCard v-for="(f, i) in forks" :key="f.id" :guide="f" :index="i" compact />
           </div>
         </section>
       </div>
 
-      <aside class="space-y-4 lg:sticky lg:top-[96px] self-start">
-        <div class="glass glass--lg p-6 overflow-hidden rise" style="--i: 2">
-          <img :src="`/glass/${g.cover}.webp`" alt="" class="absolute -right-12 -top-10 w-48 opacity-60 -z-[1] pointer-events-none">
-          <div class="label">индекс полезности</div>
-          <div class="mt-2 flex items-end gap-3">
-            <span class="display silver text-[72px] leading-[.9]">{{ g.usefulness }}</span>
-            <span class="mb-2 text-sm text-[var(--text-3)]">из 100</span>
+      <aside class="space-y-4 lg:sticky lg:top-[84px] self-start">
+        <div class="panel p-5">
+          <div class="label">Индекс полезности</div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-[36px] font-bold tabular-nums leading-none tracking-[-0.02em]">{{ g.usefulness }}</span>
+            <span class="text-sm text-[var(--text-4)]">из 100</span>
           </div>
           <p class="mt-2 text-[12.5px] text-[var(--text-4)] leading-snug">
             Оценки, доля дошедших до конца и «полезно» на шагах{{ g.verified ? ' + проверка экспертом' : '' }}.
           </p>
-          <div class="mt-5 grid grid-cols-2 gap-3">
+          <div class="mt-4 grid grid-cols-2 gap-2">
             <div class="stat">
-              <span class="stat__v mono">{{ percent(g.completion_rate) }}</span>
+              <span class="stat__v tabular-nums">{{ percent(g.completion_rate) }}</span>
               <span class="stat__l">дошли до конца</span>
             </div>
             <div class="stat">
-              <span class="stat__v mono">{{ formatNumber(g.runs_count) }}</span>
+              <span class="stat__v tabular-nums">{{ formatNumber(g.runs_count) }}</span>
               <span class="stat__l">прохождений</span>
             </div>
             <div class="stat col-span-2">
               <span class="flex items-center gap-2">
-                <span class="stat__v mono">{{ g.rating?.toFixed(1) ?? '—' }}</span>
+                <span class="stat__v tabular-nums">{{ g.rating?.toFixed(1) ?? '—' }}</span>
                 <RatingStars :value="g.rating ?? 0" :size="14" />
               </span>
               <span class="stat__l">{{ pl(g.rating_count, 'оценка', 'оценки', 'оценок') }}</span>
@@ -334,19 +341,19 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
           </div>
         </div>
 
-        <NuxtLink :to="`/u/${g.author.id}`" class="glass glass--hover p-5 flex items-center gap-3 rise" style="--i: 3">
-          <UserAvatar :id="g.author.id" :name="g.author.name" :size="44" />
+        <NuxtLink :to="`/u/${g.author.id}`" class="panel panel--hover p-4 flex items-center gap-3">
+          <UserAvatar :id="g.author.id" :name="g.author.name" :size="40" />
           <div class="min-w-0">
-            <div class="label">автор</div>
+            <div class="label">Автор</div>
             <div class="font-semibold truncate mt-0.5">
               {{ g.author.name }}
             </div>
           </div>
         </NuxtLink>
 
-        <div v-if="g.verified_by" class="glass p-5 rise" style="--i: 4">
+        <div v-if="g.verified_by" class="panel p-4">
           <div class="flex items-center gap-3">
-            <span class="ico text-[var(--ok)]"><BadgeCheck class="size-5" /></span>
+            <span class="icon-box text-[var(--ok)]"><BadgeCheck class="size-5" /></span>
             <div>
               <div class="font-semibold">
                 Проверено экспертом
@@ -358,15 +365,15 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
           </div>
         </div>
 
-        <div v-if="similar?.length" class="glass p-5 rise" style="--i: 5">
-          <div class="label mb-3">
-            похожие по смыслу
+        <div v-if="similar?.length" class="panel p-4">
+          <div class="label mb-2">
+            Похожие инструкции
           </div>
           <NuxtLink v-for="s in similar" :key="s.id" :to="`/guides/${s.slug}`" class="flex items-center gap-3 py-2.5 group border-t first:border-t-0 border-[var(--line)]">
-            <img :src="`/glass/${s.cover}.webp`" alt="" class="size-10 object-contain">
+            <GuideCover :cover="s.cover" :category="s.category" :size="32" />
             <span class="min-w-0">
               <span class="block text-[14px] font-medium leading-snug group-hover:underline underline-offset-2">{{ s.title }}</span>
-              <span class="block mono text-[11.5px] text-[var(--text-4)]">{{ s.steps_count }} шагов · {{ s.usefulness }}</span>
+              <span class="block tabular-nums text-[11.5px] text-[var(--text-4)]">{{ s.steps_count }} шагов · {{ s.usefulness }}</span>
             </span>
           </NuxtLink>
         </div>
@@ -378,15 +385,15 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
         <DialogHeader>
           <DialogTitle>Встроить на свой сайт</DialogTitle>
           <DialogDescription>
-            Интерактивный виджет с чек-листами — для сайта кафедры, блога или Notion. Прогресс ученика хранится в его браузере.
+            Виджет с чек-листами для сайта кафедры или блога. Прогресс хранится в браузере читателя.
           </DialogDescription>
         </DialogHeader>
-        <pre class="mono text-[12.5px] whitespace-pre-wrap break-all p-4 rounded-2xl bg-[var(--wash)] shadow-[inset_0_0_0_1px_var(--line)]">{{ embedCode }}</pre>
-        <div class="flex gap-3">
-          <button class="btn-chrome btn-chrome--sm" @click="copyEmbed">
+        <pre class="font-mono text-[12.5px] whitespace-pre-wrap break-all p-3 rounded-lg bg-[var(--subtle)] border border-[var(--line)]">{{ embedCode }}</pre>
+        <div class="flex gap-2">
+          <button class="btn-primary btn-sm" @click="copyEmbed">
             Скопировать код
           </button>
-          <a :href="`/embed/${g.slug}`" target="_blank" class="btn-glass btn-glass--sm">Открыть превью</a>
+          <a :href="`/embed/${g.slug}`" target="_blank" class="btn-secondary btn-sm">Открыть превью</a>
         </div>
       </DialogContent>
     </Dialog>
@@ -394,30 +401,81 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
 </template>
 
 <style scoped>
-.step {
-  border-radius: 22px;
+.tl {
+  position: relative;
+}
+
+/* нить через все шаги, пройденные куски синие */
+.tl:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 25px;
+  top: 40px;
+  bottom: -12px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--line);
+}
+
+.tl--passed:not(:last-child)::before {
+  background: var(--primary);
 }
 
 .step__head {
+  position: relative;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 14px;
   width: 100%;
-  padding: 16px 18px;
+  padding: 12px 12px;
+  border-radius: 10px;
+  transition: background .15s;
+}
+
+.step__head:hover,
+.tl--open .step__head {
+  background: var(--subtle);
+}
+
+.step__head > span:nth-child(2) {
+  padding-top: 3px;
+}
+
+.step__head > svg:last-child {
+  margin-top: 5px;
 }
 
 .step__num {
-  width: 44px;
-  font-size: 22px;
-  color: var(--text-4);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
   flex: none;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--background);
+  border: 1.5px solid var(--line-2);
+  transition: border-color .15s, color .15s;
+}
+
+.step__head:hover .step__num {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.tl--passed .step__num {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .comment {
   display: flex;
   gap: 10px;
-  padding: 12px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
   background: var(--wash);
 }
 
@@ -425,14 +483,14 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: var(--wash);
-  box-shadow: inset 0 0 0 1px var(--line);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--subtle);
+  border: 1px solid var(--line);
 }
 
 .stat__v {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 

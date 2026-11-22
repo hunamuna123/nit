@@ -15,7 +15,7 @@ function on(t: (typeof tabs)[number]) {
 </script>
 
 <template>
-  <nav v-if="!hidden" class="tabbar glass glass--pill no-print">
+  <nav v-if="!hidden" class="tabbar no-print">
     <NuxtLink v-for="t in tabs" :key="t.to" :to="t.to" class="tab" :class="on(t) && 'tab--on'">
       <component :is="t.icon" class="size-5" />
       <span>{{ t.label }}</span>
@@ -27,13 +27,15 @@ function on(t: (typeof tabs)[number]) {
 .tabbar {
   position: fixed;
   z-index: 40;
-  left: 12px;
-  right: 12px;
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  height: 64px;
-  padding: 6px;
+  height: calc(58px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--background);
+  border-top: 1px solid var(--line);
 }
 
 @media (min-width: 768px) {
@@ -48,15 +50,13 @@ function on(t: (typeof tabs)[number]) {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  border-radius: 999px;
   font-size: 11px;
   font-weight: 500;
   color: var(--text-4);
-  transition: color .2s, background .2s;
+  transition: color .15s;
 }
 
 .tab--on {
-  color: var(--foreground);
-  background: var(--wash-2);
+  color: var(--primary);
 }
 </style>

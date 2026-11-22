@@ -10,10 +10,10 @@ const stats = computed(() => ({
 <template>
   <div>
     <div class="flex items-center gap-2 mb-2">
-      <span class="tag tag--ok mono">+{{ stats.add }}</span>
-      <span class="tag tag--crit mono">−{{ stats.del }}</span>
+      <span class="tag tag--ok tabular-nums">+{{ stats.add }}</span>
+      <span class="tag tag--crit tabular-nums">−{{ stats.del }}</span>
     </div>
-    <div v-if="mode === 'diff'" class="diff mono">
+    <div v-if="mode === 'diff'" class="diff tabular-nums">
       <div v-for="(l, i) in lines" :key="i" class="diff__line" :class="`diff__line--${l.kind}`">
         <span class="diff__sign">{{ l.kind === 'add' ? '+' : l.kind === 'del' ? '−' : ' ' }}</span>
         <span class="whitespace-pre-wrap break-words">{{ l.text || ' ' }}</span>
@@ -22,13 +22,13 @@ const stats = computed(() => ({
     <div v-else class="grid gap-3 md:grid-cols-2">
       <div class="p-4 rounded-2xl bg-[var(--crit-wash)]">
         <div class="label mb-2">
-          было
+          Было
         </div>
         <MarkdownView :source="before" class="!text-[14px]" />
       </div>
       <div class="p-4 rounded-2xl bg-[var(--ok-wash)]">
         <div class="label mb-2">
-          стало
+          Стало
         </div>
         <MarkdownView :source="after" class="!text-[14px]" />
       </div>
@@ -40,15 +40,11 @@ const stats = computed(() => ({
 .diff {
   max-height: 420px;
   overflow: auto;
-  border-radius: 16px;
+  border-radius: 8px;
   font-size: 12.5px;
   line-height: 1.6;
-  background: rgba(0, 0, 0, .25);
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-
-:root:not(.dark) .diff {
-  background: rgba(20, 25, 35, .04);
+  background: var(--subtle);
+  border: 1px solid var(--line);
 }
 
 .diff__line {

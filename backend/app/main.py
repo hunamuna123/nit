@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -14,7 +15,9 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     await storage.ensure_bucket()
+    warm = asyncio.create_task(asyncio.to_thread(ai.warm_up))
     yield
+    warm.cancel()
     await ai.close()
 
 

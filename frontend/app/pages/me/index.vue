@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, BadgeCheck, Bookmark, CheckCircle2, Clock, Compass, GitPullRequest, Hourglass, Play, Save, Sparkles } from '@lucide/vue'
+import { ArrowRight, BadgeCheck, Bookmark, CheckCircle2, Clock, Compass, GitPullRequest, Hourglass, Play, Save } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import type { DashboardOut, UserMe } from '~/types/api'
 
@@ -48,7 +48,7 @@ async function sendExpertRequest() {
 
 const canRequestExpert = computed(() => auth.user?.role === 'learner' && auth.user?.expert_request_status !== 'pending')
 const STATUS: Record<string, { label: string, cls: string }> = {
-  open: { label: 'на рассмотрении', cls: 'tag--ice' },
+  open: { label: 'на рассмотрении', cls: 'tag--info' },
   accepted: { label: 'принята', cls: 'tag--ok' },
   rejected: { label: 'отклонена', cls: 'tag--crit' },
 }
@@ -61,88 +61,84 @@ const counts = computed(() => ({
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-5 pt-12">
+  <div class="mx-auto max-w-[1200px] px-5 pt-10">
     <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="scrim flex items-center gap-5">
-        <UserAvatar v-if="auth.user" :id="auth.user.id" :name="auth.user.name" :size="72" />
+      <div class="flex items-center gap-4">
+        <UserAvatar v-if="auth.user" :id="auth.user.id" :name="auth.user.name" :size="56" />
         <div>
-          <SectionLabel code>
-            личный кабинет
-          </SectionLabel>
-          <h1 class="mt-3 text-[34px] md:text-[52px] font-extrabold leading-[1.02] tracking-[-0.035em] silver" style="--lh: 1.02em">
+          <h1 class="page-title">
             {{ auth.user?.name }}
           </h1>
         </div>
       </div>
       <div class="flex flex-wrap gap-2">
-        <NuxtLink v-if="auth.user" :to="`/u/${auth.user.id}`" class="btn-glass btn-glass--sm">
+        <NuxtLink v-if="auth.user" :to="`/u/${auth.user.id}`" class="btn-secondary btn-sm">
           Публичный профиль
         </NuxtLink>
-        <NuxtLink to="/studio" class="btn-chrome btn-chrome--sm">
-          <Sparkles class="size-4" /> Студия автора
+        <NuxtLink to="/studio" class="btn-primary btn-sm">
+          Студия автора
         </NuxtLink>
       </div>
     </div>
 
     <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
       <div
-v-for="(s, i) in [
-        { v: counts.active, l: 'в процессе', icon: Hourglass },
-        { v: counts.completed, l: 'пройдено', icon: CheckCircle2 },
-        { v: counts.bookmarks, l: 'сохранено', icon: Bookmark },
-        { v: counts.suggestions, l: 'правок предложено', icon: GitPullRequest },
-      ]" :key="s.l" class="tile glass rise" :style="{ '--i': i }"
+v-for="s in [
+        { v: counts.active, l: 'В процессе', icon: Hourglass },
+        { v: counts.completed, l: 'Пройдено', icon: CheckCircle2 },
+        { v: counts.bookmarks, l: 'Сохранено', icon: Bookmark },
+        { v: counts.suggestions, l: 'Правок предложено', icon: GitPullRequest },
+      ]" :key="s.l" class="tile panel"
       >
-        <span class="ico size-9"><component :is="s.icon" class="size-4" /></span>
-        <span class="display silver text-[34px] leading-none mt-4">{{ s.v }}</span>
-        <span class="label mt-2">{{ s.l }}</span>
+        <span class="label"><component :is="s.icon" class="size-4" />{{ s.l }}</span>
+        <span class="text-[24px] font-semibold tabular-nums leading-none mt-3">{{ s.v }}</span>
       </div>
     </div>
 
     <div class="mt-10 grid gap-10 lg:grid-cols-[1fr_340px]">
       <div class="min-w-0 space-y-12">
         <section>
-          <SectionLabel num="01">
-            в процессе
-          </SectionLabel>
+          <h2 class="section-title">
+            В процессе
+          </h2>
           <div v-if="status === 'pending'" class="mt-5 grid gap-3 sm:grid-cols-2">
-            <div v-for="i in 2" :key="i" class="skel h-[170px] !rounded-[24px]" />
+            <div v-for="i in 2" :key="i" class="skel h-[170px]" />
           </div>
           <div v-else-if="data?.active.length" class="mt-5 grid gap-3 sm:grid-cols-2">
-            <article v-for="(r, i) in data.active" :key="r.run.id" class="run glass glass--hover rise" :style="{ '--i': i }">
-              <img :src="`/glass/${r.guide.cover}.webp`" alt="" class="run__blob">
-              <div class="flex items-center gap-2 relative">
-                <span class="tag"><CategoryIcon :slug="r.guide.category" class="size-3.5" />{{ categoryTitle(categories, r.guide.category) }}</span>
+            <article v-for="r in data.active" :key="r.run.id" class="run panel panel--hover">
+              <div class="flex items-center gap-2">
+                <GuideCover :cover="r.guide.cover" :category="r.guide.category" :size="28" />
+                <span class="text-[13px] text-[var(--text-3)]">{{ categoryTitle(categories, r.guide.category) }}</span>
+                <span class="flex-1" />
                 <span class="text-[12px] text-[var(--text-4)]">{{ timeAgo(r.last_activity_at) }}</span>
               </div>
-              <NuxtLink :to="`/guides/${r.guide.slug}`" class="mt-3 block font-bold text-[17px] leading-snug hover:underline underline-offset-4 relative">
+              <NuxtLink :to="`/guides/${r.guide.slug}`" class="mt-3 block font-semibold text-[16px] leading-snug hover:underline underline-offset-4">
                 {{ r.guide.title }}
               </NuxtLink>
-              <div class="mt-auto pt-5 relative">
+              <div class="mt-auto pt-5">
                 <div class="flex justify-between text-[12.5px] mb-2">
                   <span class="text-[var(--text-3)]">шаг {{ Math.min(r.run.current_step + 1, r.guide.steps_count) }} из {{ r.guide.steps_count }}</span>
-                  <span class="mono">{{ percent(r.run.progress) }}</span>
+                  <span class="tabular-nums">{{ percent(r.run.progress) }}</span>
                 </div>
                 <HairlineBar :value="r.run.progress" />
                 <p v-if="r.run.outdated" class="mt-3 text-[12.5px] text-[var(--warn)]">
-                  Автор выпустил новую версию — можно начать по ней заново.
+                  Автор выпустил новую версию, можно начать по ней заново.
                 </p>
-                <NuxtLink :to="`/guides/${r.guide.slug}/run`" class="btn-chrome btn-chrome--sm mt-4">
+                <NuxtLink :to="`/guides/${r.guide.slug}/run`" class="btn-primary btn-sm mt-4">
                   <Play class="size-4" /> Продолжить
                 </NuxtLink>
               </div>
             </article>
           </div>
-          <div v-else class="empty glass mt-5">
-            <img src="/glass/drop.webp" alt="" class="w-20">
+          <div v-else class="empty panel mt-5">
             <div>
               <div class="font-semibold">
                 Сейчас ничего не проходите
               </div>
               <p class="text-[14px] text-[var(--text-3)] mt-1">
-                Найдите задачу, которую давно откладываете, — и пройдите её шаг за шагом.
+                Найдите задачу, которую давно откладываете, и пройдите её по шагам.
               </p>
-              <NuxtLink to="/guides" class="btn-chrome btn-chrome--sm mt-4">
+              <NuxtLink to="/guides" class="btn-primary btn-sm mt-4">
                 <Compass class="size-4" /> В каталог
               </NuxtLink>
             </div>
@@ -150,10 +146,10 @@ v-for="(s, i) in [
         </section>
 
         <section>
-          <SectionLabel num="02">
-            пройдено
-          </SectionLabel>
-          <div v-if="data?.completed.length" class="mt-5 glass overflow-hidden">
+          <h2 class="section-title">
+            Пройдено
+          </h2>
+          <div v-if="data?.completed.length" class="mt-5 panel overflow-hidden">
             <NuxtLink
               v-for="r in data.completed"
               :key="r.run.id"
@@ -163,7 +159,7 @@ v-for="(s, i) in [
               <span class="done-row__check"><CheckCircle2 class="size-4" /></span>
               <span class="flex-1 min-w-0">
                 <span class="block font-semibold truncate">{{ r.guide.title }}</span>
-                <span class="block mono text-[12px] text-[var(--text-4)]">
+                <span class="block tabular-nums text-[12px] text-[var(--text-4)]">
                   {{ pl(r.guide.steps_count, 'шаг', 'шага', 'шагов') }} · {{ formatMinutes(r.guide.est_minutes) }}
                 </span>
               </span>
@@ -172,14 +168,14 @@ v-for="(s, i) in [
             </NuxtLink>
           </div>
           <p v-else-if="status !== 'pending'" class="mt-4 text-[14px] text-[var(--text-3)]">
-            Пока ни одной пройденной инструкции. Первая галочка — самая приятная.
+            Пока ни одной пройденной инструкции.
           </p>
         </section>
 
         <section>
-          <SectionLabel num="03">
-            сохранённые
-          </SectionLabel>
+          <h2 class="section-title">
+            Сохранённые
+          </h2>
           <div v-if="data?.bookmarks.length" class="mt-5 grid gap-4 sm:grid-cols-2">
             <GuideCard v-for="(g, i) in data.bookmarks" :key="g.id" :guide="g" :index="i" compact />
           </div>
@@ -189,11 +185,11 @@ v-for="(s, i) in [
         </section>
 
         <section>
-          <SectionLabel num="04">
-            мои предложения правок
-          </SectionLabel>
+          <h2 class="section-title">
+            Мои предложения правок
+          </h2>
           <div v-if="data?.suggestions.length" class="mt-5 space-y-3">
-            <article v-for="s in data.suggestions" :key="s.id" class="glass p-5">
+            <article v-for="s in data.suggestions" :key="s.id" class="panel p-5">
               <div class="flex flex-wrap items-center gap-2">
                 <span class="tag" :class="STATUS[s.status]?.cls">{{ STATUS[s.status]?.label ?? s.status }}</span>
                 <span class="text-[12px] text-[var(--text-4)]">{{ timeAgo(s.created_at) }}</span>
@@ -206,32 +202,32 @@ v-for="(s, i) in [
                   · {{ s.message }}
                 </template>
               </p>
-              <div v-if="s.reply" class="mt-3 p-3 rounded-2xl bg-[var(--wash)] text-[14px]">
-                <span class="label mb-1 block">ответ автора</span>
+              <div v-if="s.reply" class="mt-3 p-3 rounded-lg bg-[var(--wash)] text-[14px]">
+                <span class="label mb-1 block">Ответ автора</span>
                 {{ s.reply }}
               </div>
             </article>
           </div>
           <p v-else-if="status !== 'pending'" class="mt-4 text-[14px] text-[var(--text-3)]">
-            Видите, как сделать шаг понятнее? Во время прохождения нажмите «Предложить правку» — автор сможет влить её одной кнопкой.
+            Если видите, как сделать шаг понятнее, нажмите «Предложить правку» во время прохождения.
           </p>
         </section>
       </div>
 
-      <aside class="space-y-4 lg:sticky lg:top-[96px] self-start">
-        <form class="glass p-5" @submit.prevent="saveProfile">
-          <div class="label label--caps">
-            <span class="pearl" />профиль
+      <aside class="space-y-4 lg:sticky lg:top-[84px] self-start">
+        <form class="panel p-5" @submit.prevent="saveProfile">
+          <div class="font-semibold text-[15px]">
+            Профиль
           </div>
           <label class="block mt-4">
-            <span class="label mb-2 block">имя</span>
+            <span class="label mb-2 block">Имя</span>
             <input v-model="name" class="field !h-11 !text-[14.5px]" maxlength="60" required minlength="2">
           </label>
           <label class="block mt-3">
-            <span class="label mb-2 block">о себе</span>
+            <span class="label mb-2 block">О себе</span>
             <textarea v-model="bio" class="field !min-h-[90px] !text-[14px]" maxlength="400" placeholder="Чем можете помочь другим? Например: «собрал 5 ПК, помогу с BIOS»" />
           </label>
-          <button class="btn-chrome btn-chrome--sm w-full mt-3" :disabled="saving || !profileDirty">
+          <button class="btn-primary btn-sm w-full mt-3" :disabled="saving || !profileDirty">
             <Save class="size-4" /> Сохранить
           </button>
           <p class="mt-3 text-[12px] text-[var(--text-4)] truncate">
@@ -239,9 +235,9 @@ v-for="(s, i) in [
           </p>
         </form>
 
-        <div v-if="auth.user?.role !== 'learner'" class="glass p-5">
+        <div v-if="auth.user?.role !== 'learner'" class="panel p-5">
           <div class="flex items-center gap-3">
-            <span class="ico text-[var(--ok)]"><BadgeCheck class="size-5" /></span>
+            <span class="icon-box text-[var(--ok)]"><BadgeCheck class="size-5" /></span>
             <div>
               <div class="font-semibold">
                 Вы {{ auth.user?.role === 'admin' ? 'администратор' : 'эксперт' }}
@@ -256,14 +252,14 @@ v-for="(s, i) in [
               </div>
             </div>
           </div>
-          <NuxtLink to="/review" class="btn-glass btn-glass--sm w-full mt-4">
+          <NuxtLink to="/review" class="btn-secondary btn-sm w-full mt-4">
             Очередь проверки
           </NuxtLink>
         </div>
 
-        <div v-else-if="auth.user?.expert_request_status === 'pending'" class="glass p-5">
+        <div v-else-if="auth.user?.expert_request_status === 'pending'" class="panel p-5">
           <div class="flex items-center gap-3">
-            <span class="ico"><Clock class="size-5" /></span>
+            <span class="icon-box"><Clock class="size-5" /></span>
             <div>
               <div class="font-semibold">
                 Заявка в эксперты отправлена
@@ -275,15 +271,15 @@ v-for="(s, i) in [
           </div>
         </div>
 
-        <form v-else-if="canRequestExpert" class="glass p-5" @submit.prevent="sendExpertRequest">
-          <div class="label label--caps">
-            <span class="pearl" />стать экспертом
+        <form v-else-if="canRequestExpert" class="panel p-5" @submit.prevent="sendExpertRequest">
+          <div class="font-semibold text-[15px]">
+            Стать экспертом
           </div>
           <p class="mt-3 text-[13.5px] text-[var(--text-3)] leading-snug">
-            Эксперты проверяют инструкции в своих темах — проверенные получают бейдж и выше в каталоге.
+            Эксперты проверяют инструкции в своих темах. Проверенные получают отметку и выше в каталоге.
           </p>
           <p v-if="auth.user?.expert_request_status === 'rejected'" class="mt-3 text-[12.5px] text-[var(--warn)]">
-            Прошлая заявка отклонена — можно подать новую.
+            Прошлая заявка отклонена, можно подать новую.
           </p>
           <div class="mt-4 flex flex-wrap gap-1.5">
             <button
@@ -298,7 +294,7 @@ v-for="(s, i) in [
             </button>
           </div>
           <textarea v-model="expertText" class="field mt-3 !min-h-[100px] !text-[14px]" minlength="10" maxlength="1000" placeholder="Расскажите о своём опыте в этих темах" />
-          <button class="btn-chrome btn-chrome--sm w-full mt-3" :disabled="sending || !expertCats.length || expertText.trim().length < 10">
+          <button class="btn-primary btn-sm w-full mt-3" :disabled="sending || !expertCats.length || expertText.trim().length < 10">
             Отправить заявку
           </button>
         </form>
@@ -312,44 +308,30 @@ v-for="(s, i) in [
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 18px;
+  padding: 16px;
 }
 
 .run {
   display: flex;
   flex-direction: column;
-  min-height: 210px;
-  padding: 20px;
-  overflow: hidden;
-}
-
-.run__blob {
-  position: absolute;
-  z-index: -1;
-  width: 130px;
-  top: -30px;
-  right: -36px;
-  opacity: .45;
-  pointer-events: none;
+  min-height: 200px;
+  padding: 18px;
 }
 
 .empty {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 22px;
+  padding: 20px;
 }
 
 .done-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
+  gap: 12px;
+  padding: 12px 16px;
   transition: background .15s;
 }
 
 .done-row + .done-row {
-  box-shadow: inset 0 1px 0 var(--line);
+  border-top: 1px solid var(--line);
 }
 
 .done-row:hover {
@@ -359,12 +341,11 @@ v-for="(s, i) in [
 .done-row__check {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  color: var(--on-chrome);
-  background: var(--chrome);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8);
+  color: var(--ok);
+  background: var(--ok-wash);
   flex: none;
 }
 </style>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ArrowRight, ArrowUpRight, ChartNoAxesColumn, GitFork, ListChecks, MessageSquareText, Search, Sparkles, WifiOff } from '@lucide/vue'
+import { ArrowRight, ChartNoAxesColumn, GitFork, ListChecks, Search, Sparkles, WifiOff } from '@lucide/vue'
 import type { GuideList, PlatformStats } from '~/types/api'
 
-useHead({ title: 'Пошаговые инструкции, которые проходят до конца' })
+useHead({ title: 'Пошаговые инструкции с чек-листами' })
 
 const { data: stats } = useFetch<PlatformStats>('/api/meta/stats', { key: 'stats' })
 const { data: popular } = useFetch<GuideList>('/api/guides', { key: 'home-popular', query: { sort: 'useful', limit: 6 } })
@@ -14,31 +14,12 @@ function search() {
   router.push({ path: '/guides', query: q.value.trim() ? { q: q.value.trim() } : {} })
 }
 
-const steps = [
-  {
-    n: '01',
-    title: 'Найди',
-    icon: Search,
-    points: ['Поиск понимает смысл: «не включается комп после сборки»', 'Прощает опечатки и формы слов', 'Рейтинг полезности, а не просто лайки'],
-  },
-  {
-    n: '02',
-    title: 'Пройди',
-    icon: ListChecks,
-    points: ['Один экран — один шаг', 'Чек-лист не даст пропустить важное', 'Прогресс сохраняется, работает офлайн'],
-  },
-  {
-    n: '03',
-    title: 'Помоги',
-    icon: MessageSquareText,
-    points: ['Кнопка «Застрял» — советы и подсказка ИИ', '«Полезно / не полезно» на каждом шаге', 'Предложи правку или сделай форк'],
-  },
-  {
-    n: '04',
-    title: 'Улучши',
-    icon: ChartNoAxesColumn,
-    points: ['Воронка по шагам и индекс узких мест', 'ИИ читает комментарии и предлагает правку', 'Новая версия — сравнение «до / после»'],
-  },
+const tasks = ['собрать пк', 'справка в деканате', 'установить docker', 'налоговый вычет', 'резюме на стажировку']
+
+const features = [
+  { icon: Search, title: 'Найдите инструкцию', text: 'Поиск понимает запрос своими словами и прощает опечатки.' },
+  { icon: ListChecks, title: 'Пройдите по шагам', text: 'Один шаг на экране, чек-лист и сохранённый прогресс. Работает без интернета.' },
+  { icon: ChartNoAxesColumn, title: 'Авторы видят проблемы', text: 'Статистика показывает, на каком шаге бросают, и автор правит именно его.' },
 ]
 
 const funnel = [
@@ -48,217 +29,169 @@ const funnel = [
   { t: 'Установить WSL 2', v: 49 },
   { t: 'Запустить Docker Desktop', v: 45 },
 ]
-
-const tasks = ['собрать пк', 'справка в деканате', 'отчёт по лабораторной', 'установить docker', 'налоговый вычет', 'первый pull request', 'заселение в общагу', 'резюме на стажировку']
 </script>
 
 <template>
   <div>
-    <section class="relative">
-      <div class="absolute inset-0 grid-lines pointer-events-none" />
-      <div class="relative mx-auto max-w-[1180px] px-5 pt-16 md:pt-24 pb-14">
-        <div class="flex items-center justify-between gap-4 rise">
-          <SectionLabel code>
-            платформа инструкций
-          </SectionLabel>
-          <span v-if="stats" class="glass glass--pill hidden sm:inline-flex items-center gap-2.5 h-10 px-4 text-sm">
-            <span class="pearl pearl--sm" />
-            <span class="mono">{{ formatNumber(stats.runs) }}</span> прохождений ·
-            <span class="mono">{{ formatNumber(stats.guides) }}</span> инструкций
-          </span>
-        </div>
-
-        <h1 class="hero-title display silver halo rise" style="--i: 1">
-          Делай впервые&nbsp;—<br>как в сотый раз
-        </h1>
-        <p class="mt-6 max-w-[620px] text-[17px] md:text-[19px] leading-relaxed text-[var(--text-2)] halo rise" style="--i: 2">
-          Интерактивные инструкции с чек-листами — от сборки ПК до справки в деканате.
-          Отметил шаг — перешёл дальше. А автор видит, где ученики спотыкаются, и чинит именно это место.
-        </p>
-
-        <form class="hero-search glass glass--lg rise" style="--i: 3" @submit.prevent="search">
-          <Search class="size-5 shrink-0 text-[var(--text-3)] ml-2" />
-          <input v-model="q" class="flex-1 min-w-0 bg-transparent outline-none text-[16px] md:text-[17px] placeholder:text-[var(--text-4)]" placeholder="Что нужно сделать? «оформить академ», «докер на винду»…">
-          <button class="btn-chrome shrink-0" type="submit">
-            Найти <ArrowRight class="size-4" />
-          </button>
-        </form>
-
-        <div class="mt-4 flex flex-wrap gap-2 rise" style="--i: 4">
-          <NuxtLink v-for="t in tasks.slice(0, 5)" :key="t" :to="{ path: '/guides', query: { q: t } }" class="chip">
-            {{ t }}
-          </NuxtLink>
-        </div>
-
-        <div class="mt-10 flex flex-wrap gap-3 rise" style="--i: 5">
-          <NuxtLink to="/guides" class="btn-chrome">
-            Открыть каталог <ArrowUpRight class="size-4" />
-          </NuxtLink>
-          <NuxtLink to="/studio/new" class="btn-glass">
-            <Sparkles class="size-4" /> Написать инструкцию с ИИ
-          </NuxtLink>
-        </div>
-      </div>
-
-      <div class="py-5 border-y border-[var(--line)] bg-[var(--wash)]">
-        <MarqueeTicker :items="tasks" />
-      </div>
-    </section>
-
-    <section class="mx-auto max-w-[1180px] px-5 mt-24">
-      <SectionLabel num="01">
-        как это работает
-      </SectionLabel>
-      <h2 class="section-title silver halo">
-        Нить проходит через всю задачу
-      </h2>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <article v-for="(s, i) in steps" :key="s.n" class="glass glass--hover p-6 rise min-h-[300px] flex flex-col" :style="{ '--i': i }">
-          <div class="flex items-start justify-between">
-            <span class="display text-[44px] leading-none silver">{{ s.n }}</span>
-            <span class="ico"><component :is="s.icon" class="size-[18px]" /></span>
-          </div>
-          <h3 class="mt-4 text-[26px] font-extrabold tracking-tight">
-            {{ s.title }}
-          </h3>
-          <ul class="mt-4 space-y-2.5">
-            <li v-for="p in s.points" :key="p" class="flex gap-2.5 text-[14.5px] text-[var(--text-3)] leading-snug">
-              <span class="pearl pearl--sm mt-[7px]" />{{ p }}
-            </li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="mx-auto max-w-[1180px] px-5 mt-24">
-      <div class="flex items-end justify-between gap-4">
+    <section class="hero">
+      <div class="mx-auto max-w-[1200px] px-5 py-12 md:py-20 grid gap-12 lg:grid-cols-[1fr_440px] lg:gap-16 items-center">
         <div>
-          <SectionLabel num="02">
-            самое полезное
-          </SectionLabel>
-          <h2 class="section-title silver halo">
-            Проходят до конца
-          </h2>
+          <h1 class="hero__title">
+            Пошаговые инструкции, которые <span class="text-[var(--primary)]">доводят до&nbsp;результата</span>
+          </h1>
+          <p class="mt-5 max-w-[540px] text-[16px] md:text-[17.5px] leading-relaxed text-[var(--text-3)]">
+            От сборки ПК до справки в деканате. Отмечайте шаги по чек-листу, а если застряли — спросите
+            у тех, кто уже прошёл.
+          </p>
+
+          <form class="hero-search" @submit.prevent="search">
+            <Search class="size-[18px] shrink-0 text-[var(--text-4)]" />
+            <input v-model="q" class="flex-1 min-w-0 bg-transparent outline-none text-[15px] placeholder:text-[var(--text-4)]" placeholder="Что нужно сделать?">
+            <button class="btn-primary btn-sm shrink-0" type="submit">
+              Найти
+            </button>
+          </form>
+
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <span class="text-[13px] text-[var(--text-4)] mr-1">Например:</span>
+            <NuxtLink v-for="t in tasks" :key="t" :to="{ path: '/guides', query: { q: t } }" class="chip !h-7 !text-[13px]">
+              {{ t }}
+            </NuxtLink>
+          </div>
+
+          <dl v-if="stats" class="hero__stats">
+            <div>
+              <dt>прохождений</dt>
+              <dd>{{ formatNumber(stats.runs) }}</dd>
+            </div>
+            <div>
+              <dt>дошли до конца</dt>
+              <dd>{{ formatNumber(stats.completions) }}</dd>
+            </div>
+            <div>
+              <dt>инструкций</dt>
+              <dd>{{ formatNumber(stats.guides) }}</dd>
+            </div>
+          </dl>
         </div>
-        <NuxtLink to="/guides" class="btn-glass btn-glass--sm hidden sm:inline-flex">
+
+        <HeroPreview />
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-[1200px] px-5 mt-14">
+      <div class="grid gap-8 md:grid-cols-3">
+        <div v-for="f in features" :key="f.title" class="flex gap-3.5">
+          <span class="icon-box"><component :is="f.icon" class="size-[18px]" /></span>
+          <div>
+            <h3 class="font-semibold text-[15.5px]">
+              {{ f.title }}
+            </h3>
+            <p class="mt-1 text-[14px] leading-relaxed text-[var(--text-3)]">
+              {{ f.text }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mx-auto max-w-[1200px] px-5 mt-16">
+      <div class="flex items-center justify-between gap-4">
+        <h2 class="home-h2">
+          Популярные инструкции
+        </h2>
+        <NuxtLink to="/guides" class="text-[14px] font-medium text-[var(--ice)] inline-flex items-center gap-1 hover:underline underline-offset-4">
           Весь каталог <ArrowRight class="size-4" />
         </NuxtLink>
       </div>
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <GuideCard v-for="(g, i) in popular?.items ?? []" :key="g.id" :guide="g" :index="i" />
       </div>
     </section>
 
-    <section class="mx-auto max-w-[1180px] px-5 mt-24">
-      <div class="glass glass--lg overflow-hidden p-6 md:p-12 grid gap-10 lg:grid-cols-[1fr_1.1fr] items-center">
-        <div>
-          <SectionLabel num="03">
-            для авторов
-          </SectionLabel>
-          <h2 class="section-title silver">
-            Видно, где спотыкаются
-          </h2>
-          <p class="mt-5 text-[16px] leading-relaxed text-[var(--text-2)] max-w-[480px]">
-            Каждое прохождение — это сигнал. Нить собирает, где бросают, где сидят дольше заявленного,
-            где жмут «Застрял», и считает индекс проблемности каждого шага.
-          </p>
-          <ul class="mt-6 space-y-3 text-[15px]">
-            <li class="flex gap-3">
-              <span class="ico size-8"><ChartNoAxesColumn class="size-4" /></span><span class="pt-1">Воронка и сравнение версий «до / после правки»</span>
-            </li>
-            <li class="flex gap-3">
-              <span class="ico size-8"><Sparkles class="size-4" /></span><span class="pt-1">ИИ читает комментарии и пишет новую редакцию шага</span>
-            </li>
-            <li class="flex gap-3">
-              <span class="ico size-8"><GitFork class="size-4" /></span><span class="pt-1">Правки от учеников вливаются, как pull request</span>
-            </li>
-            <li class="flex gap-3">
-              <span class="ico size-8"><WifiOff class="size-4" /></span><span class="pt-1">Ученики проходят офлайн — события дойдут позже</span>
-            </li>
-          </ul>
-          <NuxtLink to="/studio" class="btn-chrome mt-8">
-            Открыть студию <ArrowRight class="size-4" />
-          </NuxtLink>
-        </div>
-
-        <div class="funnel glass p-5 md:p-6" aria-label="Пример воронки по шагам">
-          <div class="flex items-center justify-between mb-5">
-            <span class="label">воронка · установить docker</span>
-            <span class="tag tag--crit">узкое место</span>
-          </div>
-          <div v-for="(f, i) in funnel" :key="f.t" class="funnel__row" :class="f.hot && 'funnel__row--hot'">
-            <span class="mono text-xs text-[var(--text-4)] w-6">{{ String(i + 1).padStart(2, '0') }}</span>
-            <div class="flex-1 min-w-0">
-              <div class="flex justify-between gap-3 text-[13.5px]">
-                <span class="truncate">{{ f.t }}</span>
-                <span class="mono text-[var(--text-3)]">{{ f.v }}%</span>
-              </div>
-              <div class="funnel__bar">
-                <span :style="{ width: `${f.v}%` }" />
-              </div>
-              <p v-if="f.hot" class="mt-2 text-[12.5px] text-[var(--crit)]">
-                Бросают 40% дошедших · в 2,8 раза дольше · «Застрял» — 31 раз
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mx-auto max-w-[1180px] px-5 mt-24">
-      <SectionLabel num="04">
-        категории
-      </SectionLabel>
-      <h2 class="section-title silver halo">
-        От бюрократии до железа
+    <section class="mx-auto max-w-[1200px] px-5 mt-16">
+      <h2 class="home-h2">
+        Категории
       </h2>
-      <div class="mt-10 grid gap-3 grid-cols-2 md:grid-cols-4">
+      <div class="mt-6 grid gap-3 grid-cols-2 md:grid-cols-4">
         <NuxtLink
-          v-for="(c, i) in categories"
+          v-for="c in categories"
           :key="c.slug"
           :to="{ path: '/guides', query: { category: c.slug } }"
-          class="glass glass--hover p-5 rise flex flex-col gap-4 min-h-[150px]"
-          :style="{ '--i': i }"
+          class="panel panel--hover p-4 flex items-center gap-3"
         >
-          <span class="ico"><CategoryIcon :slug="c.slug" class="size-[18px]" /></span>
-          <div class="mt-auto">
-            <div class="font-bold text-[17px]">
+          <span class="icon-box"><CategoryIcon :slug="c.slug" class="size-[18px]" /></span>
+          <div class="min-w-0">
+            <div class="font-semibold text-[15px] truncate">
               {{ c.title }}
             </div>
-            <div class="text-[13px] text-[var(--text-3)] mono">
+            <div class="text-[13px] text-[var(--text-4)] tabular-nums">
               {{ pl(c.count, 'инструкция', 'инструкции', 'инструкций') }}
             </div>
           </div>
         </NuxtLink>
-        <NuxtLink to="/studio/new" class="glass glass--hover p-5 flex flex-col gap-4 min-h-[150px] glass--lit">
-          <span class="ico"><Sparkles class="size-[18px]" /></span>
-          <div class="mt-auto">
-            <div class="font-bold text-[17px]">
+        <NuxtLink to="/studio/new" class="panel panel--hover p-4 flex items-center gap-3 border-dashed">
+          <span class="icon-box"><Sparkles class="size-[18px]" /></span>
+          <div class="min-w-0">
+            <div class="font-semibold text-[15px]">
               Нет нужной?
             </div>
-            <div class="text-[13px] text-[var(--text-3)]">
-              ИИ набросает черновик за минуту
+            <div class="text-[13px] text-[var(--text-4)]">
+              Напишите свою
             </div>
           </div>
         </NuxtLink>
       </div>
     </section>
 
-    <section v-if="stats" class="mx-auto max-w-[1180px] px-5 mt-24">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div
-v-for="(s, i) in [
-          { v: stats.guides, l: 'инструкций' },
-          { v: stats.steps, l: 'шагов с чек-листами' },
-          { v: stats.runs, l: 'прохождений' },
-          { v: stats.completions, l: 'дошли до конца' },
-        ]" :key="s.l" class="rise" :style="{ '--i': i }"
-        >
-          <div class="display silver text-[44px] md:text-[64px] leading-none">
-            {{ formatNumber(s.v) }}
+    <section class="mx-auto max-w-[1200px] px-5 mt-16">
+      <div class="panel p-6 md:p-10 grid gap-10 lg:grid-cols-2 items-center">
+        <div>
+          <h2 class="home-h2 !text-[26px] md:!text-[32px]">
+            Для авторов: видно, где люди застревают
+          </h2>
+          <p class="mt-3 text-[15px] leading-relaxed text-[var(--text-3)] max-w-[480px]">
+            По каждому шагу считаем, сколько людей бросили, сколько времени заняло и как часто нажимали
+            «Застрял». Шаги с проблемами подсвечиваются.
+          </p>
+          <ul class="mt-6 space-y-3 text-[14.5px] text-[var(--text-2)]">
+            <li class="flex items-center gap-3">
+              <ChartNoAxesColumn class="size-4 text-[var(--text-4)]" />Воронка и сравнение версий
+            </li>
+            <li class="flex items-center gap-3">
+              <Sparkles class="size-4 text-[var(--text-4)]" />ИИ предлагает новую редакцию шага по комментариям
+            </li>
+            <li class="flex items-center gap-3">
+              <GitFork class="size-4 text-[var(--text-4)]" />Правки от читателей, как pull request
+            </li>
+            <li class="flex items-center gap-3">
+              <WifiOff class="size-4 text-[var(--text-4)]" />Прохождения офлайн досылаются позже
+            </li>
+          </ul>
+          <NuxtLink to="/studio" class="btn-primary mt-7">
+            Открыть студию
+          </NuxtLink>
+        </div>
+
+        <div class="rounded-[10px] border border-[var(--line)] bg-[var(--subtle)] p-4 md:p-5" aria-label="Пример воронки по шагам">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[13px] font-medium text-[var(--text-3)]">Установить Docker · доля дошедших</span>
+            <span class="tag tag--crit">узкое место</span>
           </div>
-          <div class="mt-2 label">
-            <span class="pearl pearl--sm" />{{ s.l }}
+          <div v-for="(f, i) in funnel" :key="f.t" class="funnel__row" :class="f.hot && 'funnel__row--hot'">
+            <span class="tabular-nums text-[12px] text-[var(--text-4)] w-4">{{ i + 1 }}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between gap-3 text-[13.5px]">
+                <span class="truncate">{{ f.t }}</span>
+                <span class="tabular-nums text-[var(--text-3)]">{{ f.v }}%</span>
+              </div>
+              <div class="funnel__bar">
+                <span :style="{ width: `${f.v}%` }" />
+              </div>
+              <p v-if="f.hot" class="mt-1.5 text-[12.5px] text-[var(--crit)]">
+                Бросают 40% · в 2,8 раза дольше плана · «Застрял» 31 раз
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -267,49 +200,90 @@ v-for="(s, i) in [
 </template>
 
 <style scoped>
-.hero-title {
-  margin-top: 34px;
-  font-size: clamp(38px, 6.6vw, 96px);
-  line-height: .98;
-  --lh: .98em;
+.hero {
+  border-bottom: 1px solid var(--line);
+  background: var(--subtle);
+}
+
+.hero__title {
+  max-width: 640px;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: -.04em;
+}
+
+@media (min-width: 768px) {
+  .hero__title { font-size: 58px; }
+}
+
+.hero__stats {
+  display: flex;
+  gap: 36px;
+  margin-top: 36px;
+}
+
+.hero__stats > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.hero__stats dd {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero__stats dt {
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+.home-h2 {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -.03em;
 }
 
 .hero-search {
   display: flex;
   align-items: center;
-  gap: 12px;
-  max-width: 680px;
-  margin-top: 36px;
-  padding: 8px 8px 8px 12px;
-  border-radius: 999px;
+  gap: 10px;
+  max-width: 560px;
+  margin-top: 28px;
+  height: 48px;
+  padding: 0 6px 0 14px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--input);
+  box-shadow: var(--shadow-sm);
+  transition: border-color .15s, box-shadow .15s;
 }
 
-.section-title {
-  margin-top: 14px;
-  font-size: clamp(32px, 4.6vw, 56px);
-  font-weight: 800;
-  line-height: 1.04;
-  letter-spacing: -.035em;
-  --lh: 1.04em;
+.hero-search:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 18%, transparent);
 }
 
 .funnel__row {
   display: flex;
-  gap: 12px;
-  padding: 12px 10px;
-  border-radius: 16px;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: 8px;
 }
 
 .funnel__row--hot {
   background: var(--crit-wash);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--crit) 35%, transparent);
 }
 
 .funnel__bar {
-  height: 6px;
-  margin-top: 8px;
-  border-radius: 6px;
-  background: var(--line);
+  height: 5px;
+  margin-top: 6px;
+  border-radius: 5px;
+  background: var(--wash-2);
   overflow: hidden;
 }
 
@@ -317,14 +291,10 @@ v-for="(s, i) in [
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .25), #fff);
-}
-
-:root:not(.dark) .funnel__bar span {
-  background: linear-gradient(90deg, rgba(20, 25, 35, .25), #1a1d22);
+  background: var(--primary);
 }
 
 .funnel__row--hot .funnel__bar span {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--crit) 30%, transparent), var(--crit));
+  background: var(--crit);
 }
 </style>

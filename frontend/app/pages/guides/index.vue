@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BadgeCheck, Search, Sparkles, X } from '@lucide/vue'
+import { BadgeCheck, Plus, Search, Sparkles, X } from '@lucide/vue'
 import type { GuideCard, GuideList } from '~/types/api'
 
 useHead({ title: 'Каталог инструкций' })
@@ -71,37 +71,34 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1180px] px-5 pt-12">
+  <div class="mx-auto max-w-[1200px] px-5 pt-10">
     <div class="flex flex-wrap items-end justify-between gap-6">
-      <div class="scrim">
-        <SectionLabel code>
-          каталог
-        </SectionLabel>
-        <h1 class="mt-4 text-[40px] md:text-[60px] font-extrabold leading-[1.02] silver" style="--lh: 1.02em">
+      <div>
+        <h1 class="page-title">
           {{ activeCategory?.title ?? 'Все инструкции' }}
         </h1>
-        <p class="mt-3 text-[var(--text-3)] max-w-[560px]">
-          {{ activeCategory?.description ?? 'Проверенные пошаговые маршруты для задач, которые делаешь впервые.' }}
+        <p class="mt-2 text-[var(--text-3)] max-w-[560px]">
+          {{ activeCategory?.description ?? 'Пошаговые инструкции для задач, которые делаете впервые.' }}
         </p>
       </div>
-      <NuxtLink to="/studio/new" class="btn-glass btn-glass--sm">
-        <Sparkles class="size-4" /> Создать свою
+      <NuxtLink to="/studio/new" class="btn-secondary btn-sm">
+        <Plus class="size-4" /> Написать свою
       </NuxtLink>
     </div>
 
-    <div class="mt-8 relative">
-      <Search class="absolute left-5 top-1/2 -translate-y-1/2 size-5 text-[var(--text-3)] z-[3] pointer-events-none" />
-      <input v-model="q" type="search" class="field !h-[58px] !rounded-[999px] !pl-14 !pr-12 !text-[16.5px]" placeholder="Опишите задачу своими словами — поиск поймёт смысл">
-      <button v-if="q" class="absolute right-4 top-1/2 -translate-y-1/2 z-[3] text-[var(--text-3)] hover:text-foreground" aria-label="Очистить" @click="q = ''">
-        <X class="size-5" />
+    <div class="mt-6 relative">
+      <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-[var(--text-4)] z-[3] pointer-events-none" />
+      <input v-model="q" type="search" class="field !h-11 !pl-10 !pr-10" placeholder="Опишите задачу своими словами">
+      <button v-if="q" class="absolute right-3 top-1/2 -translate-y-1/2 z-[3] text-[var(--text-3)] hover:text-foreground" aria-label="Очистить" @click="q = ''">
+        <X class="size-[18px]" />
       </button>
     </div>
     <div v-if="filters.q && data" class="mt-3 flex flex-wrap items-center gap-2 text-sm text-[var(--text-3)]">
       Найдено {{ pl(data.total, 'инструкция', 'инструкции', 'инструкций') }}
-      <span v-for="m in data.search_modes" :key="m" class="tag tag--ice">{{ MODES[m] ?? m }}</span>
+      <span v-for="m in data.search_modes" :key="m" class="tag tag--info">{{ MODES[m] ?? m }}</span>
     </div>
 
-    <div class="mt-6 -mx-5 px-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+    <div class="mt-4 -mx-5 px-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
       <button class="chip" :class="!filters.category && 'chip--on'" @click="setQuery({ category: undefined })">
         Все
       </button>
@@ -113,12 +110,12 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
         @click="setQuery({ category: filters.category === c.slug ? undefined : c.slug })"
       >
         <CategoryIcon :slug="c.slug" class="size-4" />{{ c.title }}
-        <span class="mono text-[11px] opacity-60">{{ c.count }}</span>
+        <span class="tabular-nums text-[11px] opacity-60">{{ c.count }}</span>
       </button>
     </div>
 
     <div class="mt-4 flex flex-wrap items-center gap-3">
-      <div class="seg glass glass--pill">
+      <div class="seg">
         <button
           v-for="(d, i) in ['Любая', 'Легко', 'Средне', 'Сложно']"
           :key="d"
@@ -131,17 +128,17 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       </div>
 
       <Select :model-value="filters.max_minutes ?? 'any'" @update:model-value="v => setQuery({ max_minutes: v === 'any' ? undefined : String(v) })">
-        <SelectTrigger class="h-10 rounded-full px-4 min-w-[150px] bg-[var(--wash)]">
+        <SelectTrigger class="h-8 min-w-[140px]">
           <SelectValue placeholder="Любое время" />
         </SelectTrigger>
-        <SelectContent class="rounded-2xl">
+        <SelectContent>
           <SelectItem v-for="t in TIMES" :key="t.v" :value="t.v">
             {{ t.l }}
           </SelectItem>
         </SelectContent>
       </Select>
 
-      <label class="flex items-center gap-2.5 h-10 px-4 rounded-full bg-[var(--wash)] shadow-[inset_0_0_0_1px_var(--line)] cursor-pointer text-sm">
+      <label class="flex items-center gap-2 h-8 px-3 rounded-lg border border-[var(--line)] cursor-pointer text-[13.5px]">
         <Switch :model-value="filters.verified === true" @update:model-value="v => setQuery({ verified: v ? '1' : undefined })" />
         <BadgeCheck class="size-4 text-[var(--ok)]" /> Проверено экспертом
       </label>
@@ -149,11 +146,11 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       <div class="flex-1" />
 
       <div class="flex items-center gap-1 text-sm">
-        <span class="label mr-1">сортировка</span>
+        <span class="label mr-1">Сортировка:</span>
         <button
           v-for="s in SORTS"
           :key="s.v"
-          class="h-9 px-3 rounded-full transition-colors"
+          class="h-8 px-2.5 rounded-md transition-colors"
           :class="filters.sort === s.v ? 'bg-[var(--wash-2)] text-foreground' : 'text-[var(--text-3)] hover:text-foreground'"
           :disabled="!!filters.q"
           :title="filters.q ? 'При поиске результаты упорядочены по релевантности' : ''"
@@ -164,28 +161,27 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       </div>
     </div>
 
-    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <template v-if="status === 'pending' && !items.length">
-        <div v-for="i in 6" :key="i" class="skel h-[262px] !rounded-[26px]" />
+        <div v-for="i in 6" :key="i" class="skel h-[236px]" />
       </template>
       <GuideCard v-for="(g, i) in items" :key="g.id" :guide="g" :index="i % PAGE" />
     </div>
 
-    <div v-if="status !== 'pending' && !items.length" class="glass glass--lg mt-4 p-10 text-center">
-      <img src="/glass/infinity.webp" alt="" class="w-40 mx-auto opacity-80">
-      <h3 class="mt-4 text-2xl font-bold">
+    <div v-if="status !== 'pending' && !items.length" class="panel mt-4 p-10 text-center">
+      <h3 class="text-lg font-semibold">
         Такой инструкции пока нет
       </h3>
       <p class="mt-2 text-[var(--text-3)]">
-        Опишите задачу — ИИ соберёт черновик шагов, а вы проверите и опубликуете.
+        Опишите задачу, и ИИ соберёт черновик шагов. Останется проверить и опубликовать.
       </p>
-      <NuxtLink :to="{ path: '/studio/new', query: filters.q ? { topic: filters.q } : {} }" class="btn-chrome mt-6">
+      <NuxtLink :to="{ path: '/studio/new', query: filters.q ? { topic: filters.q } : {} }" class="btn-primary mt-6">
         <Sparkles class="size-4" /> Создать{{ filters.q ? ` «${filters.q}»` : '' }} с ИИ
       </NuxtLink>
     </div>
 
     <div v-if="data && items.length < data.total" class="mt-8 flex justify-center">
-      <button class="btn-glass" :disabled="loadingMore" @click="more">
+      <button class="btn-secondary" :disabled="loadingMore" @click="more">
         {{ loadingMore ? 'Загружаем…' : `Показать ещё (${data.total - items.length})` }}
       </button>
     </div>
@@ -195,22 +191,24 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
 <style scoped>
 .seg {
   display: inline-flex;
-  padding: 4px;
+  padding: 2px;
   gap: 2px;
+  border-radius: 8px;
+  background: var(--wash);
 }
 
 .seg__btn {
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 999px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
   font-size: 13.5px;
   color: var(--text-3);
-  transition: background .2s, color .2s;
+  transition: background .15s, color .15s;
 }
 
 .seg__btn--on {
-  color: var(--on-chrome);
-  background: var(--chrome);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8);
+  color: var(--foreground);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
 }
 </style>

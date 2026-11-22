@@ -113,11 +113,13 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
   <div v-if="guide" class="mx-auto max-w-[1200px] px-5 pt-8">
     <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div class="min-w-0">
-        <div class="flex flex-wrap items-center gap-2">
-          <NuxtLink :to="{ path: '/guides', query: { category: g.category } }" class="tag hover:text-foreground">
-            <CategoryIcon :slug="g.category" class="size-3.5" />{{ categoryTitle(categories, g.category) }}
+        <div class="crumbs">
+          <NuxtLink to="/guides" class="hover:text-foreground">Каталог</NuxtLink>
+          <span class="text-[var(--text-4)]">/</span>
+          <NuxtLink :to="{ path: '/guides', query: { category: g.category } }" class="inline-flex items-center gap-1.5 hover:text-foreground" :class="`c-${g.cover}`">
+            <span class="dot text-[var(--c)]" />{{ categoryTitle(categories, g.category) }}
           </NuxtLink>
-          <span class="tag">v{{ g.version.number }}</span>
+          <span class="tag ml-1">версия {{ g.version.number }}</span>
           <span v-if="g.verified" class="tag tag--ok"><BadgeCheck class="size-3.5" />проверено экспертом</span>
           <NuxtLink v-if="g.forked_from" :to="`/guides/${g.forked_from.slug}`" class="tag hover:text-foreground">
             <GitFork class="size-3.5" />форк «{{ g.forked_from.title }}»
@@ -131,14 +133,14 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
           {{ g.summary }}
         </p>
 
-        <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 tabular-nums text-[13px] text-[var(--text-3)]">
-          <span class="inline-flex items-center gap-1.5"><ListChecks class="size-4" />{{ pl(g.steps_count, 'шаг', 'шага', 'шагов') }}</span>
-          <span class="inline-flex items-center gap-1.5"><Clock class="size-4" />{{ formatMinutes(g.est_minutes) }}</span>
+        <div class="meta tabular-nums">
+          <span><ListChecks class="size-4" />{{ pl(g.steps_count, 'шаг', 'шага', 'шагов') }}</span>
+          <span><Clock class="size-4" />{{ formatMinutes(g.est_minutes) }}</span>
           <span>сложность: {{ DIFFICULTY[g.difficulty]?.toLowerCase() }}</span>
-          <span v-for="t in g.tags" :key="t">#{{ t }}</span>
+          <span v-if="g.tags.length" class="text-[var(--text-4)]">{{ g.tags.map(t => `#${t}`).join(' ') }}</span>
         </div>
 
-        <div class="mt-7 panel p-5">
+        <div class="startbox panel">
           <template v-if="run && run.status !== 'completed'">
             <div class="flex items-center justify-between text-sm mb-3">
               <span class="label">Ваш прогресс</span>
@@ -189,20 +191,20 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
             </div>
           </template>
 
-          <div class="mt-4 pt-4 border-t border-[var(--line)] flex flex-wrap gap-2">
-            <button class="chip" :class="g.bookmarked && 'chip--on'" @click="toggleBookmark">
+          <div class="actions">
+            <button class="act" :class="g.bookmarked && 'act--on'" @click="toggleBookmark">
               <Bookmark class="size-4" :class="g.bookmarked && 'fill-current'" /> {{ g.bookmarked ? 'Сохранено' : 'Сохранить' }}
             </button>
-            <button class="chip" :disabled="forking" @click="fork">
-              <GitFork class="size-4" /> Сделать форк
+            <button class="act" :disabled="forking" @click="fork">
+              <GitFork class="size-4" /> Сделать свою версию
             </button>
-            <button class="chip" :class="offlineSaved && 'chip--on'" @click="saveOffline">
+            <button class="act" :class="offlineSaved && 'act--on'" @click="saveOffline">
               <component :is="offlineSaved ? WifiOff : Download" class="size-4" /> {{ offlineSaved ? 'Доступно офлайн' : 'Скачать офлайн' }}
             </button>
-            <NuxtLink :to="`/guides/${g.slug}/print`" target="_blank" class="chip">
+            <NuxtLink :to="`/guides/${g.slug}/print`" target="_blank" class="act">
               <FileDown class="size-4" /> PDF
             </NuxtLink>
-            <button class="chip" @click="embedOpen = true">
+            <button class="act" @click="embedOpen = true">
               <Code2 class="size-4" /> Встроить
             </button>
           </div>
@@ -223,12 +225,12 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
               :class="{ 'tl--passed': run && (run.status === 'completed' || i < run.current_step), 'tl--open': open === s.key }"
             >
               <button class="step__head" :aria-expanded="open === s.key" @click="open = open === s.key ? null : s.key">
-                <span class="step__num tabular-nums">
+                <span class="step__num num">
                   <Check v-if="run && (run.status === 'completed' || i < run.current_step)" class="size-3.5" />
                   <template v-else>{{ i + 1 }}</template>
                 </span>
                 <span class="flex-1 min-w-0 text-left">
-                  <span class="block font-medium text-[15.5px] leading-snug">{{ s.title }}</span>
+                  <span class="step__title">{{ s.title }}</span>
                   <span class="mt-1 flex flex-wrap gap-x-4 gap-y-1 tabular-nums text-[12px] text-[var(--text-4)]">
                     <span>{{ formatMinutes(s.minutes) }}</span>
                     <span v-if="s.checklist.length">{{ pl(s.checklist.length, 'пункт', 'пункта', 'пунктов') }} чек-листа</span>
@@ -239,11 +241,11 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
                 </span>
                 <ChevronDown class="size-[18px] text-[var(--text-4)] transition-transform" :class="open === s.key && 'rotate-180'" />
               </button>
-              <div v-if="open === s.key" class="pb-6 pl-[54px] pr-2 md:pr-4">
+              <div v-if="open === s.key" class="pb-6 pl-[60px] pr-2 md:pr-4">
                 <MarkdownView :source="s.body" />
                 <ul v-if="s.checklist.length" class="mt-4 space-y-2">
                   <li v-for="c in s.checklist" :key="c.key" class="flex items-start gap-2.5 text-[14.5px]">
-                    <span class="mt-0.5 size-[18px] rounded-[5px] shrink-0 border-[1.5px] border-[var(--line-2)]" />{{ c.text }}
+                    <span class="mt-0.5 size-[18px] rounded-[5px] shrink-0 border-[1.5px] border-[var(--thread)] opacity-70" />{{ c.text }}
                   </li>
                 </ul>
                 <div v-if="commentsByStep[s.key]?.length" class="mt-5 space-y-2">
@@ -316,7 +318,7 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
         <div class="panel p-5">
           <div class="label">Индекс полезности</div>
           <div class="mt-2 flex items-baseline gap-2">
-            <span class="text-[36px] font-bold tabular-nums leading-none tracking-[-0.02em]">{{ g.usefulness }}</span>
+            <span class="num text-[48px] font-semibold leading-none text-[var(--thread)]">{{ g.usefulness }}</span>
             <span class="text-sm text-[var(--text-4)]">из 100</span>
           </div>
           <p class="mt-2 text-[12.5px] text-[var(--text-4)] leading-snug">
@@ -372,7 +374,7 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
           <NuxtLink v-for="s in similar" :key="s.id" :to="`/guides/${s.slug}`" class="flex items-center gap-3 py-2.5 group border-t first:border-t-0 border-[var(--line)]">
             <GuideCover :cover="s.cover" :category="s.category" :size="32" />
             <span class="min-w-0">
-              <span class="block text-[14px] font-medium leading-snug group-hover:underline underline-offset-2">{{ s.title }}</span>
+              <span class="block serif text-[15px] font-medium leading-snug group-hover:text-[var(--thread)] transition-colors">{{ s.title }}</span>
               <span class="block tabular-nums text-[11.5px] text-[var(--text-4)]">{{ s.steps_count }} шагов · {{ s.usefulness }}</span>
             </span>
           </NuxtLink>
@@ -401,82 +403,159 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
 </template>
 
 <style scoped>
+.crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 0;
+  margin-top: 18px;
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+
+.meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta > span:not(:last-child)::after {
+  content: '·';
+  margin: 0 10px 0 4px;
+  color: var(--text-4);
+}
+
+.startbox {
+  margin-top: 28px;
+  padding: 20px 22px 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 4px;
+  margin: 16px -8px 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-2);
+}
+
+.act {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 9px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  color: var(--text-3);
+  transition: color .15s, background .15s;
+}
+
+.act:hover:not(:disabled) {
+  color: var(--foreground);
+  background: var(--wash);
+}
+
+.act--on {
+  color: var(--thread);
+}
+
 .tl {
   position: relative;
 }
 
-/* нить через все шаги, пройденные куски синие */
 .tl:not(:last-child)::before {
   content: '';
   position: absolute;
-  left: 25px;
-  top: 40px;
-  bottom: -12px;
+  left: 27px;
+  top: 44px;
+  bottom: -10px;
   width: 2px;
-  border-radius: 2px;
-  background: var(--line);
+  background-image: linear-gradient(180deg, var(--line-2) 0 6px, transparent 6px 10px);
+  background-size: 2px 10px;
+  background-repeat: repeat-y;
 }
 
 .tl--passed:not(:last-child)::before {
-  background: var(--primary);
+  background: var(--thread);
+  border-radius: 2px;
 }
 
 .step__head {
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: 14px;
+  gap: 16px;
   width: 100%;
   padding: 12px 12px;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: background .15s;
 }
 
 .step__head:hover,
 .tl--open .step__head {
-  background: var(--subtle);
+  background: var(--card);
 }
 
 .step__head > span:nth-child(2) {
-  padding-top: 3px;
+  padding-top: 4px;
 }
 
 .step__head > svg:last-child {
-  margin-top: 5px;
+  margin-top: 7px;
+}
+
+.step__title {
+  display: block;
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-size: 17.5px;
+  font-weight: 500;
+  line-height: 1.35;
 }
 
 .step__num {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   flex: none;
   border-radius: 50%;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
-  color: var(--text-3);
+  color: var(--text-2);
   background: var(--background);
   border: 1.5px solid var(--line-2);
   transition: border-color .15s, color .15s;
 }
 
 .step__head:hover .step__num {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--thread);
+  border-color: var(--thread);
 }
 
 .tl--passed .step__num {
-  color: var(--primary-foreground);
-  background: var(--primary);
-  border-color: var(--primary);
+  color: #fff;
+  background: var(--thread);
+  border-color: var(--thread);
 }
 
 .comment {
   display: flex;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--wash);
+  border-radius: 10px;
+  background: var(--background);
+  border: 1px solid var(--line);
 }
 
 .stat {
@@ -484,13 +563,14 @@ const KIND: Record<string, string> = { question: 'вопрос', tip: 'сове�
   flex-direction: column;
   gap: 2px;
   padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--subtle);
+  border-radius: 10px;
+  background: var(--background);
   border: 1px solid var(--line);
 }
 
 .stat__v {
-  font-size: 18px;
+  font-family: var(--font-serif);
+  font-size: 20px;
   font-weight: 600;
 }
 

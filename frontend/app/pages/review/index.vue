@@ -106,7 +106,7 @@ async function submit(verdict: 'approved' | 'changes') {
               <span class="tag"><CategoryIcon :slug="q.guide.category" class="size-3.5" />{{ categoryTitle(categories, q.guide.category) }}</span>
               <span class="tag">v{{ q.version_number }}</span>
             </div>
-            <NuxtLink :to="`/guides/${q.guide.slug}`" target="_blank" class="mt-2 block font-semibold text-[16px] leading-snug hover:underline underline-offset-4">
+            <NuxtLink :to="`/guides/${q.guide.slug}`" target="_blank" class="mt-2 block serif font-semibold text-[18px] leading-snug hover:text-[var(--thread)] transition-colors">
               {{ q.guide.title }}
             </NuxtLink>
             <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 tabular-nums text-[12px] text-[var(--text-4)]">
@@ -152,10 +152,10 @@ async function submit(verdict: 'approved' | 'changes') {
             </p>
             <div v-for="(s, i) in detail.steps" :key="s.key" class="p-5 rounded-[20px] bg-[var(--wash)] shadow-[inset_0_0_0_1px_var(--line)]">
               <div class="flex items-start gap-3">
-                <span class="text-[15px] font-semibold tabular-nums text-[var(--text-4)] w-9 shrink-0">{{ i + 1 }}</span>
+                <span class="num text-[17px] font-semibold text-[var(--thread)] w-9 shrink-0">{{ i + 1 }}</span>
                 <div class="min-w-0 flex-1">
                   <div class="flex flex-wrap items-center gap-2">
-                    <span class="font-semibold text-[16px]">{{ s.title }}</span>
+                    <span class="serif font-semibold text-[17px]">{{ s.title }}</span>
                     <span class="tag"><Clock class="size-3" />{{ formatMinutes(s.minutes) }}</span>
                     <span v-if="detail.step_stats[s.key]?.down" class="tag tag--crit" title="Ученики отметили «не полезно»">
                       <MessageSquareWarning class="size-3" />{{ detail.step_stats[s.key]!.down }}

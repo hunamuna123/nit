@@ -3,8 +3,8 @@ withDefaults(defineProps<{ cover: string, category: string, size?: number }>(), 
 </script>
 
 <template>
-  <span class="cover" :class="`cover--${cover}`" :style="{ width: `${size}px`, height: `${size}px` }">
-    <CategoryIcon :slug="category" :style="{ width: `${Math.round(size * 0.48)}px`, height: `${Math.round(size * 0.48)}px` }" />
+  <span class="cover" :class="`c-${cover}`" :style="{ width: `${Math.round(size * 0.8)}px`, height: `${size}px` }">
+    <CategoryIcon :slug="category" :style="{ width: `${Math.round(size * 0.42)}px`, height: `${Math.round(size * 0.42)}px` }" />
   </span>
 </template>
 
@@ -13,22 +13,14 @@ withDefaults(defineProps<{ cover: string, category: string, size?: number }>(), 
   flex: none;
   display: inline-grid;
   place-items: center;
-  border-radius: 10px;
-  color: var(--c);
-  background: color-mix(in srgb, var(--c) 12%, transparent);
+  padding-left: 2px;
+  border-radius: 3px 7px 7px 3px;
+  color: #f7f3ec;
+  background: var(--c, #6b655c);
+  box-shadow: inset 3px 0 0 rgba(0, 0, 0, .16), inset 0 0 0 1px rgba(0, 0, 0, .06);
 }
 
-.cover--torus { --c: #2f54eb; }
-.cover--peanut { --c: #16a34a; }
-.cover--drop { --c: #d97706; }
-.cover--blob { --c: #db2777; }
-.cover--ring { --c: #7c3aed; }
-.cover--infinity { --c: #0d9488; }
-
-.dark .cover--torus { --c: #7b93fb; }
-.dark .cover--peanut { --c: #4ade80; }
-.dark .cover--drop { --c: #fbbf24; }
-.dark .cover--blob { --c: #f472b6; }
-.dark .cover--ring { --c: #a78bfa; }
-.dark .cover--infinity { --c: #2dd4bf; }
+.dark .cover {
+  color: #1a1816;
+}
 </style>

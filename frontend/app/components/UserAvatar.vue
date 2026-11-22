@@ -18,12 +18,15 @@ const hue = computed(() => (props.id * 47) % 360)
   place-items: center;
   border-radius: 50%;
   font-weight: 600;
-  color: hsl(var(--h) 45% 32%);
-  background: hsl(var(--h) 60% 90%);
+  letter-spacing: .01em;
+  color: hsl(var(--h) 32% 30%);
+  background: hsl(var(--h) 34% 87%);
+  box-shadow: inset 0 0 0 1px hsl(var(--h) 25% 78%);
 }
 
 .dark .avatar {
-  color: hsl(var(--h) 60% 82%);
-  background: hsl(var(--h) 30% 24%);
+  color: hsl(var(--h) 40% 82%);
+  background: hsl(var(--h) 20% 24%);
+  box-shadow: inset 0 0 0 1px hsl(var(--h) 18% 32%);
 }
 </style>

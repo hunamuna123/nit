@@ -113,7 +113,7 @@ async function changeRole(u: AdminUser, role: unknown) {
         </template>
         <div v-for="t in tiles" :key="t.l" class="tile panel">
           <span class="label !whitespace-normal"><component :is="t.icon" class="size-4 shrink-0" />{{ t.l[0]!.toUpperCase() + t.l.slice(1) }}</span>
-          <span class="text-[22px] font-semibold tabular-nums leading-none mt-3">{{ t.v }}</span>
+          <span class="num text-[26px] font-semibold leading-none mt-3">{{ t.v }}</span>
         </div>
       </div>
 

@@ -146,7 +146,7 @@ v-for="k in [
           <div class="label !text-[12px] !whitespace-normal">
             {{ k.l[0]!.toUpperCase() + k.l.slice(1) }}
           </div>
-          <div class="mt-2 tabular-nums text-[22px] font-semibold leading-none">
+          <div class="mt-2 num text-[26px] font-semibold leading-none">
             {{ k.v }}
           </div>
         </div>
@@ -168,7 +168,7 @@ v-for="k in [
           </button>
         </div>
         <p v-if="insights" class="mt-4 panel p-4 text-[14.5px] text-[var(--text-2)]">
-          <Sparkles class="size-4 inline mr-1.5 text-[var(--ice)]" />{{ insights.summary }}
+          <Sparkles class="size-4 inline mr-1.5 text-[var(--thread)]" />{{ insights.summary }}
         </p>
 
         <div v-if="problems.length" class="mt-4 grid gap-4 lg:grid-cols-2">
@@ -181,12 +181,12 @@ v-for="k in [
                   </span>
                   <span class="label">Шаг {{ s.position + 1 }}</span>
                 </div>
-                <h3 class="mt-2.5 text-[17px] font-semibold leading-snug">
+                <h3 class="mt-2.5 serif text-[19px] font-semibold leading-snug">
                   {{ s.title }}
                 </h3>
               </div>
               <div class="text-right shrink-0">
-                <div class="text-[24px] font-semibold tabular-nums leading-none" :class="s.level === 'critical' ? 'text-[var(--crit)]' : 'text-[var(--warn)]'">
+                <div class="num text-[30px] font-semibold leading-none" :class="s.level === 'critical' ? 'text-[var(--crit)]' : 'text-[var(--warn)]'">
                   {{ s.score }}
                 </div>
                 <div class="label !text-[10.5px] mt-1">
@@ -352,7 +352,7 @@ v-for="k in [
                 </span>
                 <span class="tabular-nums shrink-0">{{ percent(v.completion_rate) }}</span>
               </div>
-              <div class="bar mt-2">
+              <div class="bar mt-2" :class="v.id === a.version.id && 'bar--current'">
                 <span class="bar__fill" :style="{ width: `${v.completion_rate * 100}%` }" />
               </div>
               <div class="mt-1 tabular-nums text-[11.5px] text-[var(--text-4)]">
@@ -462,12 +462,25 @@ v-for="k in [
   overflow: hidden;
 }
 
+/* воронка графитом, красным только проблемные шаги */
 .bar__fill {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--primary);
+  background: color-mix(in srgb, var(--foreground) 60%, transparent);
   transition: width .4s var(--ease);
+}
+
+.row--critical .bar__fill {
+  background: var(--crit);
+}
+
+.row--warn .bar__fill {
+  background: var(--warn);
+}
+
+.bar--current .bar__fill {
+  background: var(--thread);
 }
 
 .delta {

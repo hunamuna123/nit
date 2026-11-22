@@ -91,7 +91,7 @@ v-for="s in [
       ]" :key="s.l" class="tile panel"
       >
         <span class="label"><component :is="s.icon" class="size-4" />{{ s.l }}</span>
-        <span class="text-[24px] font-semibold tabular-nums leading-none mt-3">{{ s.v }}</span>
+        <span class="num text-[28px] font-semibold leading-none mt-3">{{ s.v }}</span>
       </div>
     </div>
 
@@ -112,7 +112,7 @@ v-for="s in [
                 <span class="flex-1" />
                 <span class="text-[12px] text-[var(--text-4)]">{{ timeAgo(r.last_activity_at) }}</span>
               </div>
-              <NuxtLink :to="`/guides/${r.guide.slug}`" class="mt-3 block font-semibold text-[16px] leading-snug hover:underline underline-offset-4">
+              <NuxtLink :to="`/guides/${r.guide.slug}`" class="mt-3 block serif font-semibold text-[18px] leading-snug hover:text-[var(--thread)] transition-colors">
                 {{ r.guide.title }}
               </NuxtLink>
               <div class="mt-auto pt-5">

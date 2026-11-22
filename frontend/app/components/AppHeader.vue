@@ -30,11 +30,11 @@ async function logout() {
 <template>
   <header class="header no-print">
     <div class="header__bar">
-      <NuxtLink to="/" class="shrink-0 mr-4" aria-label="На главную">
+      <NuxtLink to="/" class="header__brand" aria-label="На главную">
         <BrandMark />
       </NuxtLink>
 
-      <nav class="hidden md:flex items-center gap-1">
+      <nav class="header__nav">
         <NuxtLink v-for="l in links" :key="l.to" :to="l.to" class="nav-link" :class="isActive(l.to) && 'nav-link--on'">
           {{ l.label }}
         </NuxtLink>
@@ -43,9 +43,9 @@ async function logout() {
       <div class="flex-1" />
 
       <button class="search-btn" aria-label="Поиск" @click="searchOpen = true">
-        <Search class="size-4" />
-        <span class="hidden lg:inline">Найти инструкцию</span>
-        <span class="kbd hidden lg:inline-grid">⌘K</span>
+        <Search class="size-[17px]" />
+        <span class="search-btn__text">Найти инструкцию</span>
+        <span class="kbd search-btn__kbd">⌘K</span>
       </button>
 
       <button class="icon-btn" :aria-label="colorMode.value === 'dark' ? 'Светлая тема' : 'Тёмная тема'" @click="toggleTheme">
@@ -60,8 +60,8 @@ async function logout() {
 
       <DropdownMenu v-if="auth.user">
         <DropdownMenuTrigger as-child>
-          <button class="rounded-full ml-1" aria-label="Меню профиля">
-            <UserAvatar :id="auth.user.id" :name="auth.user.name" :size="32" />
+          <button class="avatar-btn" aria-label="Меню профиля">
+            <UserAvatar :id="auth.user.id" :name="auth.user.name" :size="34" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" class="w-60">
@@ -98,7 +98,7 @@ async function logout() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <NuxtLink v-else :to="{ path: '/login', query: { next: route.fullPath } }" class="btn-primary btn-sm ml-1">
+      <NuxtLink v-else :to="{ path: '/login', query: { next: route.fullPath } }" class="btn-primary btn-sm header__login">
         Войти
       </NuxtLink>
     </div>
@@ -111,89 +111,142 @@ async function logout() {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--background) 92%, transparent);
+  background: var(--background);
   border-bottom: 1px solid var(--line);
-  -webkit-backdrop-filter: saturate(140%) blur(8px);
-  backdrop-filter: saturate(140%) blur(8px);
 }
 
 .header__bar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   max-width: 1200px;
   height: var(--header-h);
   margin: 0 auto;
   padding: 0 20px;
 }
 
+/* ссылка флексом, иначе строчный бокс поднимает логотип над меню */
+.header__brand {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 100%;
+  margin-right: 20px;
+}
+
+.header__nav {
+  display: none;
+  align-items: stretch;
+  gap: 22px;
+  height: 100%;
+}
+
+@media (min-width: 768px) {
+  .header__nav { display: flex; }
+}
+
 .nav-link {
-  height: 34px;
+  position: relative;
   display: inline-flex;
   align-items: center;
-  padding: 0 10px;
-  border-radius: 7px;
   font-size: 14.5px;
   font-weight: 500;
   color: var(--text-3);
-  transition: color .15s, background .15s;
+  transition: color .15s;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background .15s;
 }
 
 .nav-link:hover {
   color: var(--foreground);
-  background: var(--wash);
 }
 
 .nav-link--on {
   color: var(--foreground);
 }
 
+.nav-link--on::after {
+  background: var(--thread);
+}
+
 .search-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 34px;
-  min-width: 240px;
-  padding: 0 6px 0 10px;
-  border-radius: 8px;
+  height: 36px;
+  width: 260px;
+  padding: 0 7px 0 11px;
+  border-radius: 10px;
   font-size: 14px;
   color: var(--text-4);
-  background: var(--subtle);
-  border: 1px solid var(--line);
+  background: var(--card);
+  border: 1px solid var(--line-2);
   transition: border-color .15s, color .15s;
 }
 
-.search-btn > span:nth-child(2) {
+.search-btn__text {
   flex: 1;
   text-align: left;
 }
 
 .search-btn:hover {
   color: var(--text-3);
-  border-color: var(--line-2);
+  border-color: var(--text-4);
 }
 
 @media (max-width: 1023px) {
   .search-btn {
-    min-width: 0;
-    width: 34px;
+    width: 36px;
     padding: 0;
     justify-content: center;
+    color: var(--text-2);
+    background: transparent;
+  }
+
+  .search-btn__text,
+  .search-btn__kbd {
+    display: none;
   }
 }
 
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  color: var(--text-3);
-  transition: background .15s, color .15s;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--text-2);
+  border: 1px solid var(--line-2);
+  transition: border-color .15s, color .15s;
 }
 
-.icon-btn:hover {
+.icon-btn:hover,
+.search-btn:hover {
   color: var(--foreground);
-  background: var(--wash);
+  border-color: var(--text-4);
+}
+
+.avatar-btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.header__login {
+  padding: 0 16px;
 }
 </style>

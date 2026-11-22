@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/sonner'
 
 const colorMode = useColorMode()
 useHead({
-  meta: [{ name: 'theme-color', content: () => (colorMode.value === 'dark' ? '#0f0f11' : '#ffffff') }],
+  meta: [{ name: 'theme-color', content: () => (colorMode.value === 'dark' ? '#1a1816' : '#f7f3ec') }],
 })
 </script>
 

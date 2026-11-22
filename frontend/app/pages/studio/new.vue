@@ -133,7 +133,7 @@ const modes = [
         <span class="tag">{{ pl(draft.steps.length, 'шаг', 'шага', 'шагов') }} · {{ formatMinutes(totalMinutes) }}</span>
         <span v-for="t in draft.tags" :key="t" class="tag">#{{ t }}</span>
       </div>
-      <h2 class="mt-4 text-[22px] font-bold leading-tight tracking-[-0.02em]">
+      <h2 class="mt-4 serif text-[24px] font-semibold leading-tight tracking-[-0.02em]">
         {{ draft.title }}
       </h2>
       <p class="mt-2 text-[var(--text-3)]">

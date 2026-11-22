@@ -186,10 +186,11 @@ function print() {
 
 .title {
   margin-top: 10px;
-  font-size: 34px;
-  font-weight: 800;
+  font-family: var(--font-serif);
+  font-size: 36px;
+  font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -.03em;
+  letter-spacing: -.02em;
 }
 
 .summary {
@@ -245,19 +246,21 @@ function print() {
 }
 
 .step__num {
-  font-size: 20px;
-  font-weight: 700;
-  color: #9a9ea6;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 600;
+  color: #c8372d;
   flex: none;
   width: 36px;
 }
 
 .step__title {
   flex: 1;
-  font-size: 19px;
-  font-weight: 750;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -.015em;
+  letter-spacing: -.01em;
 }
 
 .step__time {

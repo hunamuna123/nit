@@ -72,7 +72,7 @@ const backLink = computed(() => `/guides/${props.slug}`)
       </NuxtLink>
       <BrandMark v-else size="sm" class="pl-1" />
       <div class="min-w-0 flex-1 px-2">
-        <div class="truncate text-[14px] font-semibold">
+        <div class="truncate serif text-[15px] font-semibold">
           {{ p.run.value?.title ?? 'Загрузка…' }}
         </div>
         <div class="tabular-nums text-[11.5px] text-[var(--text-4)]">
@@ -110,9 +110,9 @@ const backLink = computed(() => `/guides/${props.slug}`)
     </div>
 
     <section v-else-if="p.finished.value" class="finish mx-auto max-w-2xl px-4 text-center">
-      <span class="finish__icon"><Check class="size-7" /></span>
+      <BrandMark :word="false" size="lg" class="finish__knot" />
       <h1 class="mt-5 page-title">
-        Инструкция пройдена
+        Нить завязана
       </h1>
       <p class="mt-3 text-[16px] text-[var(--text-3)]">
         Все {{ pl(total, 'шаг', 'шага', 'шагов') }} отмечены. Помогите автору и следующим ученикам — оцените инструкцию.
@@ -152,7 +152,7 @@ const backLink = computed(() => `/guides/${props.slug}`)
           :class="{ 'rail__item--on': i === p.current.value, 'rail__item--done': isDone(s.key) }"
           @click="p.goTo(i)"
         >
-          <span class="rail__dot">
+          <span class="rail__dot num">
             <Check v-if="isDone(s.key)" class="size-3.5" />
             <template v-else>{{ i + 1 }}</template>
           </span>
@@ -338,16 +338,18 @@ const backLink = computed(() => `/guides/${props.slug}`)
 .rail__item:not(:last-of-type)::before {
   content: '';
   position: absolute;
-  left: 20px;
-  top: 29px;
-  bottom: -7px;
+  left: 21px;
+  top: 32px;
+  bottom: -6px;
   width: 2px;
-  border-radius: 2px;
-  background: var(--line);
+  background-image: linear-gradient(180deg, var(--line-2) 0 5px, transparent 5px 9px);
+  background-size: 2px 9px;
+  background-repeat: repeat-y;
 }
 
 .rail__item--done:not(:last-of-type)::before {
-  background: var(--primary);
+  background: var(--thread);
+  border-radius: 2px;
 }
 
 .rail__item:hover {
@@ -357,34 +359,40 @@ const backLink = computed(() => `/guides/${props.slug}`)
 
 .rail__item--on {
   color: var(--foreground);
-  background: var(--wash-2);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 
 .rail__dot {
+  position: relative;
+  z-index: 1;
   flex: none;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 600;
-  border: 1px solid var(--line-2);
+  background: var(--background);
+  border: 1.5px solid var(--line-2);
 }
 
 .rail__item--on .rail__dot {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: var(--thread);
+  border-color: var(--thread);
+  box-shadow: 0 0 0 3px var(--thread-wash);
 }
 
 .rail__item--done .rail__dot {
-  color: var(--primary-foreground);
-  background: var(--primary);
-  border-color: var(--primary);
+  color: #fff;
+  background: var(--thread);
+  border-color: var(--thread);
 }
 
 .card {
   padding: 24px 20px;
+  border-radius: 16px;
 }
 
 @media (min-width: 768px) {
@@ -417,12 +425,18 @@ const backLink = computed(() => `/guides/${props.slug}`)
   height: 22px;
   border-radius: 6px;
   color: transparent;
-  border: 1.5px solid var(--line-2);
+  background: var(--card);
+  border: 1.5px solid color-mix(in srgb, var(--thread) 45%, var(--line-2));
   transition: background .15s, border-color .15s, color .15s;
 }
 
 .check--on {
-  background: var(--subtle);
+  background: var(--background);
+}
+
+.check--on > span:nth-child(2) {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--thread) 55%, transparent);
 }
 
 .check--on .check__box {
@@ -462,21 +476,16 @@ const backLink = computed(() => `/guides/${props.slug}`)
 .pager--on {
   width: 22px;
   border-radius: 4px;
-  background: var(--primary);
+  background: var(--thread);
 }
 
 .finish {
   padding-top: 64px;
 }
 
-.finish__icon {
-  display: inline-grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  color: var(--ok);
-  background: var(--ok-wash);
+.finish__knot :deep(svg) {
+  width: 64px;
+  height: 64px;
 }
 
 .step-enter-active,

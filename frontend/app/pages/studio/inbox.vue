@@ -87,7 +87,7 @@ const TABS: { v: Tab, l: string }[] = [
           </span>
         </div>
 
-        <h2 class="mt-4 text-[17px] font-semibold leading-snug">
+        <h2 class="mt-4 serif text-[19px] font-semibold leading-snug">
           <span class="text-[var(--text-4)] font-normal">Шаг:</span>
           {{ s.current_title ?? 'шаг удалён из черновика' }}
           <template v-if="s.title && s.title !== s.current_title">

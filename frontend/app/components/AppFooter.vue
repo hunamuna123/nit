@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { ArrowUpRight, Sparkles } from '@lucide/vue'
-
-const { brand } = useAppConfig()
+import { ArrowUpRight } from '@lucide/vue'
 
 const columns = [
   {
-    title: 'Продукт',
+    title: 'Ученикам',
     links: [
-      { to: '/guides', label: 'Каталог' },
+      { to: '/guides', label: 'Каталог инструкций' },
       { to: '/me', label: 'Мои прохождения' },
-      { to: '/about', label: 'Как это работает' },
+      { to: '/about', label: 'Как это устроено' },
     ],
   },
   {
@@ -17,7 +15,7 @@ const columns = [
     links: [
       { to: '/studio/new', label: 'Написать инструкцию' },
       { to: '/studio', label: 'Студия и аналитика' },
-      { to: '/studio/inbox', label: 'Входящие правки' },
+      { to: '/studio/inbox', label: 'Предложенные правки' },
     ],
   },
   {
@@ -33,14 +31,15 @@ const columns = [
 
 <template>
   <footer class="footer no-print">
+    <div class="footer__seam" aria-hidden="true" />
     <div class="mx-auto max-w-[1200px] px-5">
       <div class="footer__top">
-        <div class="max-w-[300px]">
-          <NuxtLink to="/" aria-label="На главную">
+        <div class="max-w-[320px]">
+          <NuxtLink to="/" class="inline-flex" aria-label="На главную">
             <BrandMark />
           </NuxtLink>
-          <p class="mt-3 text-[14px] leading-relaxed text-[var(--text-3)]">
-            {{ brand.tagline }}. Чек-листы, прогресс без регистрации и аналитика для авторов.
+          <p class="footer__lead">
+            Инструкции, по которым задачу делают с первого раза: шаг за шагом, с чек-листом и советами тех, кто уже прошёл.
           </p>
           <NuxtLink to="/studio/new" class="btn-secondary btn-sm mt-5">
             Написать инструкцию
@@ -49,10 +48,10 @@ const columns = [
 
         <nav class="footer__cols" aria-label="Навигация по сайту">
           <div v-for="c in columns" :key="c.title">
-            <h3 class="text-[13px] font-semibold text-[var(--foreground)]">
+            <h3 class="footer__h">
               {{ c.title }}
             </h3>
-            <ul class="mt-3 space-y-2.5">
+            <ul class="mt-3.5 space-y-2.5">
               <li v-for="l in c.links" :key="l.label">
                 <a v-if="l.href" :href="l.href" target="_blank" rel="noopener" class="footer__link">
                   {{ l.label }}<ArrowUpRight class="size-3.5 opacity-60" />
@@ -67,10 +66,8 @@ const columns = [
       </div>
 
       <div class="footer__bottom">
-        <span>© 2026 «{{ brand.name }}»</span>
-        <span class="inline-flex items-center gap-1.5">
-          <Sparkles class="size-3.5" />ИИ — GigaChat
-        </span>
+        <span>© 2026 «Нить» · хакатон, трек «Веб-разработка»</span>
+        <span>ИИ — GigaChat</span>
       </div>
     </div>
   </footer>
@@ -78,9 +75,9 @@ const columns = [
 
 <style scoped>
 .footer {
-  margin-top: 96px;
+  position: relative;
+  margin-top: 112px;
   padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
-  border-top: 1px solid var(--line);
   background: var(--subtle);
 }
 
@@ -88,10 +85,18 @@ const columns = [
   .footer { padding-bottom: 0; }
 }
 
+.footer__seam {
+  height: 2px;
+  background-image: linear-gradient(90deg, var(--thread) 0 12px, transparent 12px 20px);
+  background-size: 20px 2px;
+  background-repeat: repeat-x;
+  opacity: .85;
+}
+
 .footer__top {
   display: grid;
   gap: 40px;
-  padding: 48px 0 40px;
+  padding: 52px 0 44px;
 }
 
 @media (min-width: 768px) {
@@ -99,6 +104,13 @@ const columns = [
     grid-template-columns: 1fr auto;
     gap: 64px;
   }
+}
+
+.footer__lead {
+  margin-top: 14px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-3);
 }
 
 .footer__cols {
@@ -109,9 +121,16 @@ const columns = [
 
 @media (min-width: 640px) {
   .footer__cols {
-    grid-template-columns: repeat(3, minmax(140px, 1fr));
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
     gap: 48px;
   }
+}
+
+.footer__h {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--foreground);
 }
 
 .footer__link {
@@ -124,7 +143,7 @@ const columns = [
 }
 
 .footer__link:hover {
-  color: var(--foreground);
+  color: var(--thread);
 }
 
 .footer__bottom {
@@ -132,8 +151,8 @@ const columns = [
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 8px 24px;
-  padding: 18px 0 22px;
-  border-top: 1px solid var(--line);
+  padding: 18px 0 24px;
+  border-top: 1px solid var(--line-2);
   font-size: 13px;
   color: var(--text-4);
 }

@@ -9,11 +9,11 @@ const router = useRouter()
 const { data: categories } = useCategories()
 
 const SORTS = [
-  { v: 'useful', l: 'Полезные' },
-  { v: 'popular', l: 'Популярные' },
-  { v: 'new', l: 'Новые' },
-  { v: 'quick', l: 'Быстрые' },
-  { v: 'rating', l: 'Рейтинг' },
+  { v: 'useful', l: 'полезные' },
+  { v: 'popular', l: 'популярные' },
+  { v: 'new', l: 'новые' },
+  { v: 'quick', l: 'быстрые' },
+  { v: 'rating', l: 'с высокой оценкой' },
 ]
 const TIMES = [
   { v: 'any', l: 'Любое время' },
@@ -86,9 +86,9 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       </NuxtLink>
     </div>
 
-    <div class="mt-6 relative">
-      <Search class="absolute left-3.5 top-1/2 -translate-y-1/2 size-[18px] text-[var(--text-4)] z-[3] pointer-events-none" />
-      <input v-model="q" type="search" class="field !h-11 !pl-10 !pr-10" placeholder="Опишите задачу своими словами">
+    <div class="mt-7 relative">
+      <Search class="absolute left-4 top-1/2 -translate-y-1/2 size-[18px] text-[var(--text-4)] z-[3] pointer-events-none" />
+      <input v-model="q" type="search" class="field catalog-search" placeholder="Опишите задачу своими словами">
       <button v-if="q" class="absolute right-3 top-1/2 -translate-y-1/2 z-[3] text-[var(--text-3)] hover:text-foreground" aria-label="Очистить" @click="q = ''">
         <X class="size-[18px]" />
       </button>
@@ -98,23 +98,22 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       <span v-for="m in data.search_modes" :key="m" class="tag tag--info">{{ MODES[m] ?? m }}</span>
     </div>
 
-    <div class="mt-4 -mx-5 px-5 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-      <button class="chip" :class="!filters.category && 'chip--on'" @click="setQuery({ category: undefined })">
+    <nav class="tabs mt-7 -mx-5 px-5 md:mx-0 md:px-0" aria-label="Категории">
+      <button class="tabs__item" :class="!filters.category && 'tabs__item--on'" @click="setQuery({ category: undefined })">
         Все
       </button>
       <button
         v-for="c in categories"
         :key="c.slug"
-        class="chip"
-        :class="filters.category === c.slug && 'chip--on'"
+        class="tabs__item"
+        :class="filters.category === c.slug && 'tabs__item--on'"
         @click="setQuery({ category: filters.category === c.slug ? undefined : c.slug })"
       >
-        <CategoryIcon :slug="c.slug" class="size-4" />{{ c.title }}
-        <span class="tabular-nums text-[11px] opacity-60">{{ c.count }}</span>
+        {{ c.title }}<span class="tabs__count">{{ c.count }}</span>
       </button>
-    </div>
+    </nav>
 
-    <div class="mt-4 flex flex-wrap items-center gap-3">
+    <div class="mt-5 flex flex-wrap items-center gap-3">
       <div class="seg">
         <button
           v-for="(d, i) in ['Любая', 'Легко', 'Средне', 'Сложно']"
@@ -128,7 +127,7 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       </div>
 
       <Select :model-value="filters.max_minutes ?? 'any'" @update:model-value="v => setQuery({ max_minutes: v === 'any' ? undefined : String(v) })">
-        <SelectTrigger class="h-8 min-w-[140px]">
+        <SelectTrigger class="catalog-select">
           <SelectValue placeholder="Любое время" />
         </SelectTrigger>
         <SelectContent>
@@ -138,20 +137,20 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
         </SelectContent>
       </Select>
 
-      <label class="flex items-center gap-2 h-8 px-3 rounded-lg border border-[var(--line)] cursor-pointer text-[13.5px]">
+      <label class="verified">
         <Switch :model-value="filters.verified === true" @update:model-value="v => setQuery({ verified: v ? '1' : undefined })" />
         <BadgeCheck class="size-4 text-[var(--ok)]" /> Проверено экспертом
       </label>
 
       <div class="flex-1" />
 
-      <div class="flex items-center gap-1 text-sm">
-        <span class="label mr-1">Сортировка:</span>
+      <div class="sorts">
+        <span class="text-[var(--text-4)]">Сначала:</span>
         <button
           v-for="s in SORTS"
           :key="s.v"
-          class="h-8 px-2.5 rounded-md transition-colors"
-          :class="filters.sort === s.v ? 'bg-[var(--wash-2)] text-foreground' : 'text-[var(--text-3)] hover:text-foreground'"
+          class="sort"
+          :class="filters.sort === s.v && 'sort--on'"
           :disabled="!!filters.q"
           :title="filters.q ? 'При поиске результаты упорядочены по релевантности' : ''"
           @click="setQuery({ sort: s.v === 'useful' ? undefined : s.v })"
@@ -161,7 +160,7 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
       </div>
     </div>
 
-    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <template v-if="status === 'pending' && !items.length">
         <div v-for="i in 6" :key="i" class="skel h-[236px]" />
       </template>
@@ -189,26 +188,76 @@ const activeCategory = computed(() => categories.value?.find(c => c.slug === fil
 </template>
 
 <style scoped>
-.seg {
-  display: inline-flex;
-  padding: 2px;
-  gap: 2px;
-  border-radius: 8px;
-  background: var(--wash);
+.catalog-search {
+  height: 50px;
+  padding-left: 44px;
+  padding-right: 40px;
+  border-radius: 12px;
+  font-size: 15.5px;
+  border-color: var(--line-2);
 }
 
-.seg__btn {
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  font-size: 13.5px;
-  color: var(--text-3);
-  transition: background .15s, color .15s;
-}
-
-.seg__btn--on {
-  color: var(--foreground);
+.catalog-select {
+  height: 36px;
+  min-width: 150px;
+  border-radius: 10px;
   background: var(--card);
-  box-shadow: var(--shadow-sm);
+  border-color: var(--line-2);
+}
+
+.verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--line-2);
+}
+
+.sorts {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 0 8px;
+}
+
+@media (max-width: 767px) {
+  .sorts {
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    padding: 4px 20px 8px;
+  }
+}
+
+.sort {
+  position: relative;
+  flex: none;
+  color: var(--text-3);
+  transition: color .15s;
+}
+
+.sort:hover:not(:disabled) {
+  color: var(--foreground);
+}
+
+.sort:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.sort--on {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-color: var(--thread);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
 }
 </style>

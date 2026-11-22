@@ -45,6 +45,7 @@ function on(t: (typeof tabs)[number]) {
 }
 
 .tab {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -56,7 +57,26 @@ function on(t: (typeof tabs)[number]) {
   transition: color .15s;
 }
 
+.tab::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 30%;
+  right: 30%;
+  height: 2px;
+  border-radius: 2px;
+  background: transparent;
+}
+
 .tab--on {
-  color: var(--primary);
+  color: var(--foreground);
+}
+
+.tab--on::before {
+  background: var(--thread);
+}
+
+.tab--on svg {
+  color: var(--thread);
 }
 </style>

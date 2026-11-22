@@ -53,7 +53,7 @@ function statusTag(g: StudioGuideItem) {
         <div class="label">
           Прохождений
         </div>
-        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none">
+        <div class="mt-2 num text-[30px] font-semibold leading-none">
           {{ formatNumber(totals.runs) }}
         </div>
       </div>
@@ -61,7 +61,7 @@ function statusTag(g: StudioGuideItem) {
         <div class="label">
           Доходят до конца
         </div>
-        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none">
+        <div class="mt-2 num text-[30px] font-semibold leading-none">
           {{ percent(totals.rate) }}
         </div>
       </div>
@@ -69,7 +69,7 @@ function statusTag(g: StudioGuideItem) {
         <div class="label">
           Открытых правок
         </div>
-        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none">
+        <div class="mt-2 num text-[30px] font-semibold leading-none">
           {{ totals.suggestions }}
         </div>
       </div>
@@ -77,7 +77,7 @@ function statusTag(g: StudioGuideItem) {
         <div class="label">
           Критичных узких мест
         </div>
-        <div class="mt-2 text-[28px] font-semibold tabular-nums leading-none" :class="totals.hot ? 'text-[var(--crit)]' : ''">
+        <div class="mt-2 num text-[30px] font-semibold leading-none" :class="totals.hot ? 'text-[var(--crit)]' : ''">
           {{ totals.hot }}
         </div>
       </div>
@@ -97,7 +97,7 @@ function statusTag(g: StudioGuideItem) {
             <span v-if="g.verified" class="tag tag--ok">эксперт</span>
             <span v-if="g.forked_from" class="tag">форк «{{ g.forked_from.title }}»</span>
           </div>
-          <NuxtLink :to="`/studio/${g.id}`" class="block mt-2 text-[16.5px] font-semibold leading-snug hover:underline underline-offset-4">
+          <NuxtLink :to="`/studio/${g.id}`" class="block mt-2 serif text-[19px] font-semibold leading-snug hover:text-[var(--thread)] transition-colors">
             {{ g.title || 'Без названия' }}
           </NuxtLink>
           <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 tabular-nums text-[12.5px] text-[var(--text-3)]">

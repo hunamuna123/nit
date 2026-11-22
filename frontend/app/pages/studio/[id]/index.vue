@@ -613,8 +613,10 @@ const COVERS_LIST = ['torus', 'peanut', 'drop', 'blob', 'ring', 'infinity']
   width: 100%;
   background: transparent;
   outline: none;
-  font-size: clamp(22px, 3vw, 28px);
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
   letter-spacing: -.02em;
   line-height: 1.2;
 }
@@ -713,7 +715,8 @@ const COVERS_LIST = ['torus', 'peanut', 'drop', 'blob', 'ring', 'infinity']
   padding: 0 4px;
   background: transparent;
   outline: none;
-  font-size: 15.5px;
+  font-family: var(--font-serif);
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -750,8 +753,8 @@ const COVERS_LIST = ['torus', 'peanut', 'drop', 'blob', 'ring', 'infinity']
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--ice);
-  background: var(--ice-wash);
+  color: var(--thread);
+  background: var(--thread-wash);
   transition: opacity .15s;
 }
 

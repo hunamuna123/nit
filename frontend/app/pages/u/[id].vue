@@ -50,7 +50,7 @@ const since = computed(() => new Date(p.value.created_at).toLocaleDateString('ru
     <div class="mt-8 grid grid-cols-2 md:grid-cols-5 gap-3">
       <div v-for="t in tiles" :key="t.l" class="tile panel">
         <span class="label"><component :is="t.icon" class="size-4" />{{ t.l }}</span>
-        <span class="text-[24px] font-semibold tabular-nums leading-none mt-3">{{ formatNumber(t.v) }}</span>
+        <span class="num text-[28px] font-semibold leading-none mt-3">{{ formatNumber(t.v) }}</span>
       </div>
     </div>
 

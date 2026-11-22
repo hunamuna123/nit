@@ -47,7 +47,7 @@ const perks = [
 <template>
   <div class="auth-wrap">
     <div class="auth-card panel">
-      <h1 class="text-[24px] font-bold leading-tight tracking-[-0.02em]">
+      <h1 class="serif text-[30px] font-semibold leading-tight tracking-[-0.02em]">
         Создать аккаунт
       </h1>
       <p class="mt-2 text-[15px] text-[var(--text-3)]">
@@ -88,7 +88,7 @@ const perks = [
     </div>
 
     <div class="perks panel">
-      <div class="font-semibold text-[15px]">
+      <div class="serif font-semibold text-[17px]">
         Что даёт аккаунт
       </div>
       <ul class="mt-4 space-y-3">

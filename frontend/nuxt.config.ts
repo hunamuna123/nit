@@ -45,7 +45,7 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'Нить — интерактивные пошаговые инструкции с чек-листами: проходите задачу шаг за шагом, а авторы видят, где ученики спотыкаются.',
         },
-        { name: 'theme-color', content: '#ffffff' },
+        { name: 'theme-color', content: '#f7f3ec' },
         { property: 'og:site_name', content: 'Нить' },
       ],
       link: [
@@ -89,8 +89,8 @@ export default defineNuxtConfig({
       short_name: 'Нить',
       description: 'Интерактивные пошаговые инструкции с чек-листами',
       lang: 'ru',
-      theme_color: '#ffffff',
-      background_color: '#ffffff',
+      theme_color: '#f7f3ec',
+      background_color: '#f7f3ec',
       display: 'standalone',
       start_url: '/',
       icons: [

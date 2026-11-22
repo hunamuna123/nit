@@ -92,6 +92,16 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 
 Данные (база, картинки, модель) лежат в docker volumes `nit-prod_db-data`, `nit-prod_s3-data`, `nit-prod_models` и переживают пересборку. `down -v` их сотрёт.
 
+### Обновить только фронт, не нагружая сервер
+
+Сборка Nuxt на слабом сервере грузит все ядра на несколько минут. Можно собрать образ у себя и привезти готовым:
+
+```bash
+docker buildx build --platform linux/amd64 -t nit-prod-web:latest --load frontend
+docker save nit-prod-web:latest | gzip -1 | ssh сервер 'gunzip | docker load'
+ssh сервер 'cd ~/nit && docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --no-build web'
+```
+
 ### Логи и остановка
 
 ```bash

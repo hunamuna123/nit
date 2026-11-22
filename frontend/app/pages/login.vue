@@ -48,7 +48,7 @@ async function demoLogin(addr: string) {
 <template>
   <div class="auth-wrap">
     <div class="auth-card panel">
-      <h1 class="text-[24px] font-bold leading-tight tracking-[-0.02em]">
+      <h1 class="serif text-[30px] font-semibold leading-tight tracking-[-0.02em]">
         Вход
       </h1>
       <p class="mt-2 text-[15px] text-[var(--text-3)]">
@@ -85,7 +85,7 @@ async function demoLogin(addr: string) {
     </div>
 
     <div class="demo panel">
-      <div class="font-semibold text-[15px]">
+      <div class="serif font-semibold text-[17px]">
         Демо-аккаунты
       </div>
       <p class="mt-2 text-[13.5px] text-[var(--text-3)]">

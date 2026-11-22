@@ -30,38 +30,44 @@ const v = computed(() => Math.min(1, Math.max(0, props.value)))
 <style scoped>
 .track {
   position: relative;
-  height: 4px;
-  border-radius: 4px;
+  height: 3px;
+  border-radius: 3px;
   overflow: hidden;
-  background: var(--wash-2);
+  background-image: linear-gradient(90deg, var(--line-2) 0 6px, transparent 6px 10px);
+  background-size: 10px 3px;
+  background-repeat: repeat-x;
 }
 
 .track__fill {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: inherit;
-  background: var(--primary);
+  background: var(--thread);
   transition: width .4s var(--ease);
 }
 
 .stitches {
   display: flex;
-  gap: 3px;
+  align-items: center;
+  gap: 5px;
   height: 4px;
 }
 
 .stitch {
   flex: 1;
-  border-radius: 4px;
-  background: var(--wash-2);
-  transition: background .3s var(--ease);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line-2);
+  transition: background .3s var(--ease), height .3s var(--ease);
 }
 
 .stitch--on {
-  background: var(--primary);
+  height: 3px;
+  background: var(--thread);
 }
 
 .stitch--now {
-  background: color-mix(in srgb, var(--primary) 30%, var(--wash-2));
+  height: 3px;
+  background: color-mix(in srgb, var(--thread) 35%, var(--line-2));
 }
 </style>

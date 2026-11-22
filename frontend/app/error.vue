@@ -5,7 +5,7 @@ import type { NuxtError } from '#app'
 const props = defineProps<{ error: NuxtError }>()
 
 const notFound = computed(() => props.error.statusCode === 404)
-const title = computed(() => (notFound.value ? 'Страница не найдена' : 'Что-то пошло не так'))
+const title = computed(() => (notFound.value ? 'Здесь нить обрывается' : 'Что-то пошло не так'))
 const message = computed(() =>
   notFound.value
     ? (props.error.statusMessage && !/^page not found/i.test(props.error.statusMessage)
@@ -32,10 +32,10 @@ function go(path: string) {
     </header>
     <main class="flex-1 grid place-items-center px-5 py-16">
       <div class="text-center max-w-md">
-        <div class="text-[64px] font-bold tracking-[-0.04em] text-[var(--text-4)] tabular-nums leading-none">
+        <div class="num text-[80px] font-semibold italic tracking-[-0.02em] text-[var(--thread)] leading-none">
           {{ error.statusCode || 500 }}
         </div>
-        <h1 class="mt-4 text-[24px] font-bold tracking-[-0.02em]">
+        <h1 class="mt-4 serif text-[30px] font-semibold tracking-[-0.02em]">
           {{ title }}
         </h1>
         <p class="mt-2 text-[15px] text-[var(--text-3)] leading-relaxed">

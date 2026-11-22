@@ -9,7 +9,7 @@ const { brand } = useAppConfig()
       <path
         class="brand__thread"
         pathLength="1"
-        d="M3 25c4 0 10-6.5 10-12.2C13 9.9 11.6 8 9.6 8S6.2 9.9 6.4 12.6c.3 4 3.6 7 7.9 10.9L28.5 8"
+        d="M2.5 21.5c3.5 0 6.6-2.4 8.4-5.8 1.6-3 1.6-6.6-.9-7.4-2.6-.8-4.1 2.6-2.2 5.6l6.7 9.6L28.8 8.2"
       />
     </svg>
     <span v-if="word" class="brand__word">{{ brand.name }}</span>
@@ -20,7 +20,7 @@ const { brand } = useAppConfig()
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   color: var(--foreground);
   line-height: 1;
 }
@@ -34,7 +34,7 @@ const { brand } = useAppConfig()
 
 .brand__thread {
   fill: none;
-  stroke: var(--primary);
+  stroke: var(--thread);
   stroke-width: 2.9;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -54,13 +54,17 @@ a:hover > .brand .brand__thread,
 }
 
 .brand__word {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -.03em;
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  /* у литераты базовая линия низкая, чуть поднимаем под ось меню */
+  transform: translateY(-1px);
 }
 
 .brand--sm .brand__mark { width: 22px; height: 22px; }
-.brand--sm .brand__word { font-size: 16px; }
+.brand--sm .brand__word { font-size: 17px; }
 .brand--lg .brand__mark { width: 34px; height: 34px; }
-.brand--lg .brand__word { font-size: 25px; }
+.brand--lg .brand__word { font-size: 27px; }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRight, Check, ChartNoAxesColumn, LifeBuoy, RotateCcw } from '@lucide/vue'
+import { ArrowRight, Check, LifeBuoy, RotateCcw } from '@lucide/vue'
 
 const TOTAL = 8
 const demo = [
@@ -31,7 +31,7 @@ const finished = ref(false)
 const checked = ref<boolean[]>([...demo[0]!.start])
 const step = computed(() => demo[idx.value]!)
 const ready = computed(() => checked.value.every(Boolean))
-const parts = computed(() => Array.from({ length: TOTAL }, (_, i) => finished.value ? i < step.value.n : i < step.value.n - 1))
+const passed = (i: number) => finished.value || i < step.value.n
 
 function toggle(i: number) {
   checked.value[i] = !checked.value[i]
@@ -62,35 +62,44 @@ function md(s: string) {
 
 <template>
   <div class="preview">
-    <div class="preview__card panel">
+    <div class="preview__card">
       <div class="flex items-center justify-between gap-3">
-        <span class="truncate text-[13px] font-medium text-[var(--text-3)]">Установить Docker на Windows 11</span>
-        <span class="tag tabular-nums shrink-0">{{ finished ? 'готово' : `шаг ${step.n} из ${TOTAL}` }}</span>
+        <span class="truncate text-[13px] text-[var(--text-3)]">Установить Docker на Windows 11</span>
+        <span class="shrink-0 tabular-nums text-[12.5px] text-[var(--text-4)]">{{ finished ? 'готово' : `шаг ${step.n} из ${TOTAL}` }}</span>
       </div>
-      <HairlineBar class="mt-3" :value="0" :parts="parts" :current="finished ? -1 : step.n - 1" />
+
+      <div class="sthread" aria-hidden="true">
+        <template v-for="i in TOTAL" :key="i">
+          <span class="sthread__node num" :class="{ 'is-done': passed(i), 'is-now': !finished && i === step.n }">
+            <Check v-if="passed(i)" class="size-3" :stroke-width="3" />
+            <template v-else>{{ i }}</template>
+          </span>
+          <span class="sthread__seg" :class="passed(i + 1) || (i < step.n && !finished) ? 'is-done' : ''" />
+        </template>
+        <svg class="sthread__knot" :class="finished && 'is-done'" viewBox="0 0 32 32">
+          <path d="M2.5 21.5c3.5 0 6.6-2.4 8.4-5.8 1.6-3 1.6-6.6-.9-7.4-2.6-.8-4.1 2.6-2.2 5.6l6.7 9.6L28.8 8.2" />
+        </svg>
+      </div>
 
       <Transition name="swap" mode="out-in">
-        <div v-if="finished" key="done" class="py-8 text-center">
-          <span class="mx-auto grid size-12 place-items-center rounded-full bg-[var(--ok-wash)] text-[var(--ok)]">
-            <Check class="size-6" />
-          </span>
-          <p class="mt-3 font-semibold text-[16px]">
-            Вот так это и работает
+        <div v-if="finished" key="done" class="py-7 text-center">
+          <p class="serif text-[22px] font-semibold">
+            Нить завязана
           </p>
-          <p class="mt-1 text-[13.5px] text-[var(--text-3)]">
-            Прогресс сохраняется, даже без регистрации
+          <p class="mt-1.5 text-[14px] text-[var(--text-3)]">
+            Так и проходят инструкции. Прогресс сохраняется даже без регистрации.
           </p>
-          <button class="btn-secondary btn-sm mt-4" @click="reset">
+          <button class="btn-secondary btn-sm mt-5" @click="reset">
             <RotateCcw class="size-3.5" /> Ещё раз
           </button>
         </div>
 
         <div v-else :key="step.n">
-          <h3 class="mt-5 text-[19px] font-semibold leading-snug tracking-[-0.015em]">
+          <h3 class="mt-5 serif text-[22px] font-semibold leading-snug tracking-[-0.01em]">
             {{ step.title }}
           </h3>
           <!-- eslint-disable-next-line vue/no-v-html -->
-          <p class="preview__text mt-2 text-[14px] leading-relaxed text-[var(--text-2)]" v-html="md(step.text)" />
+          <p class="preview__text mt-2 text-[14.5px] leading-relaxed text-[var(--text-2)]" v-html="md(step.text)" />
 
           <div class="mt-4 space-y-1.5">
             <button
@@ -102,12 +111,12 @@ function md(s: string) {
               :aria-checked="checked[i]"
               @click="toggle(i)"
             >
-              <span class="pcheck__box"><Check class="size-3.5" /></span>
+              <span class="pcheck__box"><Check class="size-3.5" :stroke-width="3" /></span>
               <span class="text-left">{{ item }}</span>
             </button>
           </div>
 
-          <div class="mt-4 flex items-center gap-3">
+          <div class="mt-5 flex items-center gap-3">
             <span class="inline-flex items-center gap-1.5 text-[12.5px] text-[var(--text-4)]">
               <LifeBuoy class="size-3.5" />31 совет от прошедших
             </span>
@@ -119,15 +128,12 @@ function md(s: string) {
       </Transition>
     </div>
 
-    <div class="preview__note panel" aria-hidden="true">
-      <span class="icon-box !size-8 !bg-[var(--crit-wash)] !text-[var(--crit)]"><ChartNoAxesColumn class="size-4" /></span>
-      <div class="min-w-0">
-        <div class="text-[12.5px] font-semibold">
-          Узкое место · шаг 3
-        </div>
-        <div class="text-[12px] text-[var(--text-3)]">
-          бросают 40%, автор уже правит
-        </div>
+    <div class="preview__note" aria-hidden="true">
+      <div class="text-[12.5px] font-semibold">
+        Автору: шаг 3 — узкое место
+      </div>
+      <div class="text-[12px] text-[var(--text-3)]">
+        бросают 40%, советов больше всего
       </div>
     </div>
   </div>
@@ -139,14 +145,17 @@ function md(s: string) {
 }
 
 @media (min-width: 1100px) {
-  .preview { padding-bottom: 56px; }
+  .preview { padding-bottom: 46px; }
 }
 
 .preview__card {
   position: relative;
   z-index: 1;
-  padding: 20px;
-  box-shadow: 0 24px 48px -24px rgba(16, 16, 20, .18), var(--shadow-sm);
+  padding: 22px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
 }
 
 .preview__text :deep(strong) {
@@ -156,38 +165,108 @@ function md(s: string) {
 
 .preview__text :deep(code) {
   font-family: var(--font-mono);
-  font-size: .88em;
+  font-size: .86em;
   padding: .1em .35em;
   border-radius: 5px;
   background: var(--wash);
   border: 1px solid var(--line);
 }
 
+.sthread {
+  display: flex;
+  align-items: center;
+  margin-top: 14px;
+}
+
+.sthread__node {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-4);
+  background: var(--card);
+  border: 1.5px solid var(--line-2);
+  transition: background .25s, border-color .25s, color .25s;
+}
+
+.sthread__node.is-done {
+  color: #fff;
+  background: var(--thread);
+  border-color: var(--thread);
+}
+
+.sthread__node.is-now {
+  color: var(--thread);
+  border-color: var(--thread);
+  box-shadow: 0 0 0 3px var(--thread-wash);
+}
+
+.sthread__seg {
+  flex: 1;
+  height: 2px;
+  min-width: 4px;
+  background-image: linear-gradient(90deg, var(--line-2) 0 4px, transparent 4px 7px);
+  background-size: 7px 2px;
+  background-repeat: repeat-x;
+}
+
+.sthread__seg.is-done {
+  background: var(--thread);
+}
+
+.sthread__knot {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-left: 2px;
+  overflow: visible;
+}
+
+.sthread__knot path {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke .3s;
+}
+
+.sthread__knot.is-done path {
+  stroke: var(--thread);
+}
+
 .preview__note {
   position: absolute;
   z-index: 2;
-  right: -14px;
+  right: -18px;
   bottom: 0;
   display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px 10px 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--thread);
   box-shadow: var(--shadow-md);
+  transform: rotate(-1.2deg);
 }
 
 @media (min-width: 1100px) {
-  .preview__note { display: flex; }
+  .preview__note { display: block; }
 }
 
 .pcheck {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
   width: 100%;
-  min-height: 40px;
+  min-height: 42px;
   padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 14.5px;
   border: 1px solid var(--line);
   transition: background .15s, border-color .15s, color .15s;
 }
@@ -200,8 +279,8 @@ function md(s: string) {
   flex: none;
   display: grid;
   place-items: center;
-  width: 18px;
-  height: 18px;
+  width: 19px;
+  height: 19px;
   border-radius: 5px;
   color: transparent;
   border: 1.5px solid var(--line-2);
@@ -210,13 +289,18 @@ function md(s: string) {
 
 .pcheck--on {
   color: var(--text-3);
-  background: var(--subtle);
+  background: var(--background);
+}
+
+.pcheck--on > span:last-child {
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--thread) 60%, transparent);
 }
 
 .pcheck--on .pcheck__box {
-  color: var(--primary-foreground);
-  background: var(--primary);
-  border-color: var(--primary);
+  color: #fff;
+  background: var(--thread);
+  border-color: var(--thread);
 }
 
 .swap-enter-active,
@@ -232,9 +316,5 @@ function md(s: string) {
 .swap-leave-to {
   opacity: 0;
   transform: translateY(-6px);
-}
-
-.dark .preview__card {
-  box-shadow: 0 24px 48px -24px rgba(0, 0, 0, .7), var(--shadow-sm);
 }
 </style>
